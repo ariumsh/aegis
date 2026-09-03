@@ -124,7 +124,7 @@ export function buildChannelPermissions(guild: Guild, userId: string, supporterR
  * escaped out of with a bare quote, and & has to be handled first or it
  * double-encodes the entities this function itself produces.
  */
-function escapeHtml(value: unknown): string {
+export function escapeHtml(value: unknown): string {
     return String(value ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -140,7 +140,7 @@ function escapeHtml(value: unknown): string {
  * the transcript is opened from disk in a browser and a javascript: href would
  * run there, so the scheme is checked rather than assumed.
  */
-function safeHref(value: unknown): string {
+export function safeHref(value: unknown): string {
     try {
         const url = new URL(String(value ?? ''));
         if (url.protocol !== 'http:' && url.protocol !== 'https:') return '#';

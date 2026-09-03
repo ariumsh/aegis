@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   quality:
-    name: Type check, lint, build
+    name: Type check, lint, test, build
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -47,6 +47,9 @@ jobs:
 
       - name: Lint
         run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test
 
       - name: Build
         run: pnpm run build

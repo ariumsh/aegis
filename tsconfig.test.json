@@ -1,0 +1,23 @@
+{
+  // Type checking for the test suite.
+  //
+  // The build config deliberately covers only src/, so tests never reach dist/.
+  // Vitest transpiles without type checking, which left type errors in the
+  // tests invisible to every automated check. This config closes that gap
+  // without letting tests into the build output.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // rootDir is src/ in the build config, which this config inherits. Widening
+    // it to the repository root is what lets tests/ be checked alongside src/
+    // without emitting anything.
+    "rootDir": ".",
+    // Vitest runs the suite as ESM, so top-level await in a test is valid there
+    // even though the build target is CommonJS. Matching that here is what makes
+    // the type check agree with how the tests are actually executed.
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "types": ["node"]
+  },
+  "include": ["src/**/*", "tests/**/*"]
+}
