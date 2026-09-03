@@ -9,6 +9,7 @@ import { ContainerComponent, TextDisplayComponent } from '../../../lib/layouts/u
 import { AegisUserError } from '../../../lib/structures/Errors';
 import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
+import { requireModPermissionFrom } from '../../../command-helpers/mod/shared/permissionGuard';
 
 @ApplyOptions<Command.Options>({
     name: 'remove-case',
@@ -27,6 +28,7 @@ export class RemoveCaseCommand extends Command {
     }) {
         const { source, guildId, moderatorId, caseNumber, reason } = data;
 
+        await requireModPermissionFrom(source, 'removecase');
         await requireModConfig(guildId);
 
         const modLog = await prisma.modLog.findFirst({

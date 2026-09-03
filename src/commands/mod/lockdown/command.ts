@@ -8,6 +8,7 @@ import { ContainerComponent, TextDisplayComponent } from '../../../lib/layouts/u
 import { AegisUserError } from '../../../lib/structures/Errors';
 import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
+import { requireModPermissionFrom } from '../../../command-helpers/mod/shared/permissionGuard';
 
 @ApplyOptions<Command.Options>({
     name: 'lockdown',
@@ -22,6 +23,7 @@ export class LockdownCommand extends Command {
     }) {
         const { source, guildId, currentChannelId, targetChannel } = data;
 
+        await requireModPermissionFrom(source, 'lockdown');
         await requireModConfig(guildId);
 
         const isLocked = targetChannel.permissionOverwrites.cache.get(guildId)?.deny.has(PermissionFlagsBits.SendMessages);

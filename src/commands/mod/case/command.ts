@@ -7,6 +7,7 @@ import { getCaseDetailLayout } from '../../../lib/layouts/modCommandLayouts';
 import { AegisUserError } from '../../../lib/structures/Errors';
 import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
+import { requireModPermissionFrom } from '../../../command-helpers/mod/shared/permissionGuard';
 
 @ApplyOptions<Command.Options>({
     name: 'case',
@@ -22,6 +23,8 @@ export class CaseCommand extends Command {
         caseNumber: number;
     }) {
         const { source, guildId, caseNumber } = data;
+
+        await requireModPermissionFrom(source, 'case');
 
         const caseData = await prisma.modLog.findFirst({
             where: { guildId, caseNumber }

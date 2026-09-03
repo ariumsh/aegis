@@ -15,5 +15,7 @@
   "mod_hierarchy": "{{cross}} You cannot moderate this member because they have a higher or equal role than you.",
   "mod_invalidDuration": "{{cross}} Invalid duration. Use: `1d`, `2h`, `30m`, or combined like `1d2h30m`.",
   "mod_self": "{{cross}} You cannot moderate yourself.",
-  "mod_bot": "{{cross}} You cannot moderate a bot."
+  "mod_bot": "{{cross}} You cannot moderate a bot.",
+  "mod_noLogChannel": "{{cross}} The **Moderation** module requires a configured log channel.",
+  "guildOnly": "{{cross}} This command can only be used in a server."
 }
