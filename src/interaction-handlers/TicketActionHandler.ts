@@ -67,12 +67,12 @@ export class TicketActionHandler extends InteractionHandler {
                     data: { claimedById: user.id }
                 });
 
-                // Update the welcome message to reflect claimed state
-                const messages = await channel.messages.fetch({ limit: 10 });
-                const welcomeMsg = messages.find((m: any) => m.author.id === guild.members.me?.id);
-                if (welcomeMsg) {
-                    await welcomeMsg.edit(getTicketWelcomeLayout(ticket.ticketNumber, ticket.userId, true, user.id) as any).catch(() => null);
-                }
+                await this.editWelcomeMessage(
+                    guild.id,
+                    ticket.id,
+                    channel,
+                    getTicketWelcomeLayout(ticket.ticketNumber, ticket.userId, true, user.id)
+                );
 
                 await logTicketEvent('claimed', claimedTicket, user.id, guild, config);
                 await interaction.followUp({ content: `You claimed ticket #${ticket.ticketNumber}.`, ephemeral: true } as any);
@@ -139,12 +139,12 @@ export class TicketActionHandler extends InteractionHandler {
                     JSON.stringify({ ticketId: ticket.id, userId: ticket.userId })
                 );
 
-                // Replace the closed message with a fresh welcome layout
-                const msgs = await channel.messages.fetch({ limit: 10 });
-                const closedMsg = msgs.find((m: any) => m.author.id === guild.members.me?.id);
-                if (closedMsg) {
-                    await closedMsg.edit(getTicketWelcomeLayout(ticket.ticketNumber, ticket.userId, false, null) as any).catch(() => null);
-                }
+                await this.editWelcomeMessage(
+                    guild.id,
+                    ticket.id,
+                    channel,
+                    getTicketWelcomeLayout(ticket.ticketNumber, ticket.userId, false, null)
+                );
 
                 await logTicketEvent('reopened', ticket, user.id, guild, config);
                 break;
@@ -171,5 +171,40 @@ export class TicketActionHandler extends InteractionHandler {
                 break;
             }
         }
+    }
+
+    /**
+     * Edits the ticket's welcome message, found by the id stored when the ticket
+     * was opened.
+     *
+     * Both call sites used to search the last ten messages for one authored by
+     * the bot and edit the first match. That is whichever message the bot posted
+     * most recently -- frequently the auto-close countdown rather than the
+     * welcome -- so claiming a ticket after sending a reminder overwrote the
+     * countdown and the pending close became invisible while still scheduled.
+     *
+     * Tickets opened before this change have no stored id; they keep the old
+     * behaviour as a fallback rather than losing the update entirely.
+     */
+    private async editWelcomeMessage(
+        guildId: string,
+        ticketId: number,
+        channel: TextChannel,
+        payload: unknown
+    ): Promise<void> {
+        const key = `tickets:welcome_message:${guildId}:${ticketId}`;
+        const messageId = await this.container.redis.get(key);
+
+        if (messageId) {
+            const edited = await channel.messages.edit(messageId, payload as any).catch(() => null);
+            if (edited) return;
+        }
+
+        const recent = await channel.messages.fetch({ limit: 10 }).catch(() => null);
+        const fallback = recent?.find((m) => m.author.id === channel.guild.members.me?.id);
+        if (!fallback) return;
+
+        await fallback.edit(payload as any).catch(() => null);
+        await this.container.redis.set(key, fallback.id);
     }
 }
