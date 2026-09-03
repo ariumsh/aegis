@@ -1,7 +1,6 @@
+# Native and postinstall builds pnpm is allowed to run.
 allowBuilds:
   '@prisma/engines': true
   esbuild: true
-  ffmpeg-static: set this to true or false
   msgpackr-extract: true
   prisma: true
-  sharp: true
