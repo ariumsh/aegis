@@ -1,0 +1,147 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+# A new push to a branch makes the run already in flight for it pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Type check, lint, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack
+        # The pnpm version is pinned by packageManager in package.json; corepack
+        # honours it, so CI resolves the same version developers use.
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        # Frozen: CI must fail on a lockfile that has drifted from package.json
+        # rather than quietly resolving something else.
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        # tsc cannot resolve the @prisma/client types until this has run.
+        run: pnpm exec prisma generate
+
+      - name: Type check
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Build
+        run: pnpm run build
+
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No agent instruction files
+        # These are local working notes. One of them documents deployment
+        # infrastructure, so this is a security check, not tidiness.
+        run: |
+          if git ls-files --error-unmatch CLAUDE.md AGENTS.md claude.md agents.md 2>/dev/null; then
+            echo "::error::Agent instruction files must not be tracked."
+            exit 1
+          fi
+          echo "OK: no agent instruction files tracked."
+
+      - name: No environment files
+        # .env.example is the one file that is meant to be here.
+        run: |
+          tracked=$(git ls-files | grep -E '^\.env' | grep -v '^\.env\.example$' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::Environment files are tracked: $tracked"
+            exit 1
+          fi
+          echo "OK: only .env.example is tracked."
+
+      - name: No build output or dependencies committed
+        run: |
+          tracked=$(git ls-files | grep -E '^(dist|node_modules)/' || true)
+          if [ -n "$tracked" ]; then
+            echo "::error::Build output or dependencies are tracked."
+            exit 1
+          fi
+          echo "OK: no build output or dependencies tracked."
+
+      - name: No AI or agent attribution
+        # Applies to development attribution only. A real dependency on an AI
+        # provider would be a functional part of the product and is not what
+        # this looks for.
+        run: |
+          if git grep -rniE 'co-authored-by:[[:space:]]*claude|generated with \[?claude|created with claude|ai-generated' -- . ; then
+            echo "::error::AI attribution found in tracked files."
+            exit 1
+          fi
+          echo "OK: no AI attribution in tracked files."
+
+      - name: Locale parity
+        # A key present in one locale renders as the raw key string for every
+        # user of the other, which is a visible bug rather than a missing nicety.
+        run: |
+          node -e '
+            const fs = require("fs");
+            const flat = (o, p = "") =>
+              Object.entries(o).flatMap(([k, v]) =>
+                v && typeof v === "object" ? flat(v, p + "." + k) : [p + "." + k]
+              );
+            let failed = false;
+            for (const ns of ["modcommands", "modules", "layouts", "errors", "admincommands"]) {
+              const en = flat(JSON.parse(fs.readFileSync(`src/lib/i18n/en-US/${ns}.json`, "utf8")));
+              const es = flat(JSON.parse(fs.readFileSync(`src/lib/i18n/es-ES/${ns}.json`, "utf8")));
+              const onlyEn = en.filter((k) => !es.includes(k));
+              const onlyEs = es.filter((k) => !en.includes(k));
+              if (onlyEn.length || onlyEs.length) {
+                failed = true;
+                console.error(`::error::${ns}: only en-US ${JSON.stringify(onlyEn)}, only es-ES ${JSON.stringify(onlyEs)}`);
+              } else {
+                console.log(`OK: ${ns} at parity (${en.length} keys).`);
+              }
+            }
+            process.exit(failed ? 1 : 0);
+          '
+
+  docker:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Only where it earns the time: the image is what production actually runs,
+    # but rebuilding it on every push to a feature branch is not worth the wait.
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
