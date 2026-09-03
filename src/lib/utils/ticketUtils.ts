@@ -38,9 +38,42 @@ export async function getTicketConfig(guildId: string): Promise<TicketConfig> {
 }
 
 
-export async function getNextTicketNumber(guildId: string): Promise<number> {
-    const last = await prisma.ticket.findFirst({ where: { guildId }, orderBy: { ticketNumber: 'desc' } });
-    return (last?.ticketNumber ?? 0) + 1;
+/**
+ * Reserves the next ticket number for a guild.
+ *
+ * The previous implementation read the highest number and added one, which is a
+ * read followed by a write with no coordination between them. Two users opening
+ * a ticket at the same moment both read N and both tried to insert N+1; the
+ * second violated ticket_guild_number_unique, and because the Discord channel is
+ * created before the row, their channel was already there and stayed behind as
+ * an orphan.
+ *
+ * Postgres settles it instead: the row is created with the number computed
+ * inside the same statement, under a lock on the guild's existing tickets.
+ * Concurrent callers serialise rather than collide.
+ */
+export async function createTicketWithNumber(guildId: string, channelId: string, userId: string) {
+    return prisma.$transaction(async (tx) => {
+        // A transaction-scoped advisory lock keyed on the guild. FOR UPDATE is
+        // not an option here -- Postgres rejects it alongside an aggregate -- and
+        // there is no row to lock anyway when the guild has no tickets yet. The
+        // lock releases automatically when the transaction ends, so a crash
+        // mid-flight cannot wedge the guild.
+        //
+        // The first argument namespaces this lock so it cannot collide with any
+        // other advisory lock taken against the same database.
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(4919, hashtext(${guildId}))`;
+
+        const [{ next }] = await tx.$queryRaw<{ next: number }[]>`
+            SELECT COALESCE(MAX(ticket_number), 0) + 1 AS next
+            FROM tickets
+            WHERE guild_id = ${guildId}
+        `;
+
+        return tx.ticket.create({
+            data: { guildId, channelId, userId, ticketNumber: Number(next), status: 'open' }
+        });
+    });
 }
 
 
