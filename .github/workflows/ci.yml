@@ -21,14 +21,14 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Enable corepack
         # The pnpm version is pinned by packageManager in package.json; corepack
         # honours it, so CI resolves the same version developers use.
         run: corepack enable
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: pnpm
@@ -57,7 +57,7 @@ jobs:
     timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: No agent instruction files
         # These are local working notes. One of them documents deployment
@@ -92,8 +92,12 @@ jobs:
         # Applies to development attribution only. A real dependency on an AI
         # provider would be a functional part of the product and is not what
         # this looks for.
+        #
+        # This file is excluded from its own search: the patterns below are
+        # spelled out here literally, so including it would make the check fail
+        # on itself. Everything else in the repository is in scope.
         run: |
-          if git grep -rniE 'co-authored-by:[[:space:]]*claude|generated with \[?claude|created with claude|ai-generated' -- . ; then
+          if git grep -niE 'co-authored-by:[[:space:]]*claude|generated with \[?claude|created with claude|ai-generated' -- . ':!.github/workflows/ci.yml'; then
             echo "::error::AI attribution found in tracked files."
             exit 1
           fi
@@ -134,7 +138,7 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: docker/setup-buildx-action@v3
 
