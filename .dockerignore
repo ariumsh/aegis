@@ -6,7 +6,10 @@ logs
 .env
 .env.*
 !.env.example
+# local assistant/agent working directories
 .claude
+.cursor
+.gemini
 *.md
 docker-compose*.yml
 Dockerfile
