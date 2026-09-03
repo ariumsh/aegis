@@ -2,6 +2,7 @@ import { Listener } from '@sapphire/framework';
 import { ActivityType, Events } from 'discord.js';
 import { prisma } from '../database/db';
 import { CacheManager } from '../database/CacheManager';
+import { loadSilentBanIndex } from '../services/SilentBanService';
 
 
 // Ready listener ──────────────────
@@ -32,6 +33,13 @@ export class ReadyListener extends Listener {
         } catch (error) {
             container.logger.error('[SYNC] Failed to warm up Redis cache:', error);
         }
+
+        // Load the silent ban index ──────────
+        // Enforcement reads this synchronously on every message, so it has to be
+        // in memory before the first one arrives.
+
+        await loadSilentBanIndex();
+
 
         // Start the member counter ──────────
         // After the cache warm-up: the service reads guild config straight from

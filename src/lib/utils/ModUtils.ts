@@ -359,8 +359,22 @@ export async function applyMute(data: {
         const member = await data.guild.members.fetch(data.userId).catch(() => null);
         if (!member) return;
 
-        const caseNumber = await sendModLog({ 
-            guildId: data.guildId, action: 'timeout', userId: data.userId, userTag: data.userTag, moderatorId: data.moderatorId, guild: data.guild, reason: data.reason, duration: data.duration, expiresAt: data.expiresAt, isAutomatic: data.isAutomatic 
+        // Discord caps a timeout at 28 days and rejects one that lands in the
+        // past. Clamping keeps an over-long or already-expired threshold rule
+        // from failing the call outright.
+        const MAX_TIMEOUT_MS = 28 * 24 * 60 * 60 * 1000;
+        const requestedMs = data.expiresAt ? data.expiresAt.getTime() - Date.now() : MAX_TIMEOUT_MS;
+        const timeoutMs = Math.min(Math.max(requestedMs, 1_000), MAX_TIMEOUT_MS);
+
+        // Apply before recording. The previous order wrote the case and the
+        // ActiveMute row first, so a timeout Discord refused -- insufficient role
+        // hierarchy, most commonly -- left a numbered case and an active mute row
+        // for a member who was never muted, while the moderator saw success.
+        // MuteWorker would later "lift" a timeout that had never been set.
+        await member.timeout(timeoutMs, data.reason ?? undefined);
+
+        const caseNumber = await sendModLog({
+            guildId: data.guildId, action: 'timeout', userId: data.userId, userTag: data.userTag, moderatorId: data.moderatorId, guild: data.guild, reason: data.reason, duration: data.duration, expiresAt: data.expiresAt, isAutomatic: data.isAutomatic
         });
 
         await prisma.activeMute.upsert({
@@ -369,8 +383,6 @@ export async function applyMute(data: {
             update: { moderatorId: data.moderatorId, reason: data.reason ?? null, expiresAt: data.expiresAt ?? null, caseNumber: caseNumber ?? 0 },
         });
 
-        const timeoutMs = data.expiresAt ? data.expiresAt.getTime() - Date.now() : 28 * 24 * 60 * 60 * 1000;
-        await member.timeout(timeoutMs, data.reason ?? undefined);
         await sendModDM({ userId: data.userId, moderatorId: data.moderatorId, action: 'timeout', guild: data.guild, reason: data.reason, duration: data.duration });
 
         if (!data.isAutomatic) {

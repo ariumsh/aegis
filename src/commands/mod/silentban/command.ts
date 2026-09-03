@@ -134,8 +134,15 @@ export class SilentBanCommand extends Subcommand {
         const bans = await listSilentBans(interaction.guildId!);
         if (bans.length === 0) throw new AegisUserError('modcommands:mod.silentban.noBans');
 
-        const listText = bans.map(ban =>
-            `${Emojis.bullet_emoji} <@${ban.userId}> › expires ${this.formatExpiry(ban.expiresAt, interaction)}`
+        // formatExpiry is async, so interpolating it directly rendered
+        // "[object Promise]" on every row. Resolved together rather than one
+        // at a time: the permanent case goes through i18n.
+        const listText = (
+            await Promise.all(
+                bans.map(async (ban) =>
+                    `${Emojis.bullet_emoji} <@${ban.userId}> › expires ${await this.formatExpiry(ban.expiresAt, interaction)}`
+                )
+            )
         ).join('\n');
 
         return interaction.editReply(getSilentBanLayout('list', { count: bans.length, listText }));
