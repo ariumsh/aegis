@@ -26,24 +26,25 @@ npm-debug.log*
 .vscode/
 .idea/
 
-# Bot — generated
+# Generated
 /src/generated/prisma
+coverage/
 
-# Web — Next.js
-web/.next/
-web/out/
-web/.turbopack/
-web/.source/
-web/pnpm-lock.yaml
-web/next-env.d.ts
-
-# LLM context / agent instruction files.
-# These are local working notes only and must never reach a published branch.
-# CLAUDE.md additionally documents production infrastructure, so keeping it out
-# of the repository is a security requirement, not just a tidiness one.
+# Local assistant / agent instruction files.
+#
+# Working notes for whatever editor or tooling a developer happens to use. They
+# are personal to a checkout and must never reach a published branch. At least
+# one of these conventionally records deployment details, so keeping the whole
+# class untracked is a security measure rather than tidiness.
 AGENTS.md
 agents.md
 CLAUDE.md
 claude.md
-web/CHAT_CONTEXT.md
+GEMINI.md
+gemini.md
+.cursorrules
+.cursor/
+.aider*
+.windsurfrules
 /.claude
+/.gemini
