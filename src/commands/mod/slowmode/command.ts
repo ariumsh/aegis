@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, GuildMember, Message, TextChannel } from 'discord.js';
+import { PermissionFlagsBits, Message, TextChannel } from 'discord.js';
 import { resolveKey } from '@sapphire/plugin-i18next';
 import { requireModConfig, parseSlowmode, formatSeconds } from '../../../lib/utils/ModUtils';
 import { Emojis } from '../../../lib/constants/emojis';
@@ -41,7 +41,7 @@ export class SlowmodeCommand extends Command {
         await targetChannel.setRateLimitPerUser(seconds);
 
         const isRemote = targetChannel.id !== currentChannelId;
-        let successMsg = '';
+        let successMsg: string;
         let remoteMsg = '';
 
         if (seconds === 0) {

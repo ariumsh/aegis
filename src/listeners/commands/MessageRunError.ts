@@ -1,4 +1,4 @@
-import { Listener, MessageCommandErrorPayload, ArgumentError, Events } from '@sapphire/framework';
+import { Listener, MessageCommandErrorPayload, Events } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
 import { resolveKey } from '@sapphire/plugin-i18next';
 import { AegisUserError } from '../../lib/structures/Errors';

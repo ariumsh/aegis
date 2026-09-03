@@ -1,6 +1,6 @@
 import { Subcommand } from '@sapphire/plugin-subcommands';
 import { ApplyOptions } from '@sapphire/decorators';
-import { GuildMember, PermissionFlagsBits } from 'discord.js';
+import { GuildMember } from 'discord.js';
 import { resolveKey } from '@sapphire/plugin-i18next';
 import { addSilentBan, removeSilentBan, listSilentBans } from '../../../services/SilentBanService';
 import { getSilentBanLayout } from '../../../lib/layouts/modCommandLayouts';

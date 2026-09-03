@@ -1,5 +1,5 @@
 import { Listener } from '@sapphire/framework';
-import { ActivityType, Events } from 'discord.js';
+import { Events } from 'discord.js';
 import { prisma } from '../database/db';
 import { CacheManager } from '../database/CacheManager';
 import { loadSilentBanIndex } from '../services/SilentBanService';

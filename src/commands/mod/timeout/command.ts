@@ -1,9 +1,8 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, GuildMember, Message } from 'discord.js';
+import { GuildMember, Message } from 'discord.js';
 import { requireModConfig, validateMod, sendModDM, parseDuration } from '../../../lib/utils/ModUtils';
 import { prisma } from '../../../database/db';
-import { CacheManager } from '../../../database/CacheManager';
 import { Emojis } from '../../../lib/constants/emojis';
 import { AegisUserError } from '../../../lib/structures/Errors';
 import modEn from '../../../lib/i18n/en-US/modcommands.json';
@@ -18,11 +17,11 @@ import { requireModPermission } from '../../../command-helpers/mod/shared/permis
 export class TimeoutCommand extends Command {
     public readonly usage = 'modcommands:mod.usage.timeout';
 
-    private async ensureTimeoutOverlapAllowed(guildId: string, target: GuildMember) {
-        const { mutedRoleId } = await CacheManager.getModConfig(guildId);
-        const hasTimeout = target.isCommunicationDisabled();
-
-        if (hasTimeout) {
+    private async ensureTimeoutOverlapAllowed(target: GuildMember) {
+        // This used to fetch the mod config to read mutedRoleId and then never
+        // use it -- a Redis round trip per invocation for nothing. Whether a
+        // member is already timed out is answered by the member object alone.
+        if (target.isCommunicationDisabled()) {
             throw new AegisUserError('modcommands:mod.timeout.alreadyTimedOut');
         }
     }
@@ -42,7 +41,7 @@ export class TimeoutCommand extends Command {
         await requireModPermission(executor, 'timeout');
         await validateMod(source, target);
         await requireModConfig(guildId);
-        await this.ensureTimeoutOverlapAllowed(guildId, target);
+        await this.ensureTimeoutOverlapAllowed(target);
 
         const duration = parseDuration(durationInput);
         if (!duration) throw new AegisUserError('errors:mod_invalidDuration');
@@ -131,7 +130,7 @@ export class TimeoutCommand extends Command {
 
         // Run overlap guard checks before defer so slash validation errors are sent as true ephemeral replies.
         await requireModConfig(interaction.guildId!);
-        await this.ensureTimeoutOverlapAllowed(interaction.guildId!, target);
+        await this.ensureTimeoutOverlapAllowed(target);
 
         await interaction.deferReply();
 

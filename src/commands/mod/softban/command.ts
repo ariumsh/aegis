@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, Guild, GuildMember, Message } from 'discord.js';
+import { Guild, GuildMember, Message } from 'discord.js';
 import { resolveKey } from '@sapphire/plugin-i18next';
 import { requireModConfig, validateMod, sendModDM } from '../../../lib/utils/ModUtils';
 import { Emojis } from '../../../lib/constants/emojis';

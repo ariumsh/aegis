@@ -1,6 +1,6 @@
 import { Subcommand } from "@sapphire/plugin-subcommands";
 import { resolveKey } from "@sapphire/plugin-i18next";
-import { CategoryChannel, ChannelType, ComponentType } from "discord.js";
+import { ComponentType } from "discord.js";
 import { prisma } from "../../../../../database/db";
 import { CacheManager, deleteMatching } from "../../../../../database/CacheManager";
 import {
