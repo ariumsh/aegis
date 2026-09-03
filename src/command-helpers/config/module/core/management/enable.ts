@@ -40,7 +40,20 @@ export async function handleEnable(interaction: Subcommand.ChatInputCommandInter
         }
         const setupFirst = await resolveKey(interaction, 'modules:module.errors.setupFirst');
         const cannotEnable = await resolveKey(interaction, 'modules:module.errors.cannotEnable', { name: displayName });
-        const missingText = missing?.map((m) => `${Emojis.static_setting_emoji} ${m}`).join('\n') ?? setupFirst;
+        // The validator returns i18n keys rather than prose: it has no
+        // interaction to resolve a locale from, so the rendering side does it.
+        // A key that fails to resolve falls back to itself rather than leaving
+        // the line blank.
+        const missingText = missing?.length
+            ? (
+                  await Promise.all(
+                      missing.map(async (key) => {
+                          const text = await resolveKey(interaction, key).catch(() => key);
+                          return `${Emojis.static_setting_emoji} ${text}`;
+                      })
+                  )
+              ).join('\n')
+            : setupFirst;
         return interaction.editReply({
             ...getMessageLayout(`${cannotEnable}\n${missingText}`)
         });
