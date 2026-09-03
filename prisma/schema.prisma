@@ -1,0 +1,251 @@
+// ─────────────────────────────────────────────
+//  Aegis – Prisma Schema
+// ─────────────────────────────────────────────
+
+generator client {
+    provider = "prisma-client-js"
+    engineType = "binary"
+}
+
+datasource db {
+    provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+//  GuildConfig
+// ─────────────────────────────────────────────
+
+model GuildConfig {
+    guildId     String  @id @map("guild_id")
+
+    // Vanity module ──────────
+    vanityString              String?  @map("vanity_string")
+    vanityRoleId              String?  @map("vanity_role_id")
+    vanityChannelId           String?  @map("vanity_channel_id")
+    vanityLogChannel          String?  @map("vanity_log_channel")
+    vanityModule              Boolean  @default(false) @map("vanity_module")
+    vanityChannelCreatedByBot Boolean  @default(false) @map("vanity_channel_created_by_bot")
+    vanityRoleCreatedByBot    Boolean  @default(false) @map("vanity_role_created_by_bot")
+
+    // Moderation module ──────────
+    modLogChannelId        String?  @map("mod_log_channel_id")
+    modModule              Boolean  @default(false) @map("mod_module")
+    modThresholdsEnabled   Boolean  @default(false) @map("mod_thresholds_enabled")
+    mutedRoleId            String?  @map("muted_role_id")
+    muteThreshold          Int      @default(3) @map("mute_threshold")
+    banThreshold           Int      @default(5) @map("ban_threshold")
+    modChannelCreatedByBot Boolean  @default(false) @map("mod_channel_created_by_bot")
+    modRoleCreatedByBot    Boolean  @default(false) @map("mod_role_created_by_bot")
+    warnExpirationDays     Int      @default(90) @map("warn_expiration_days")
+    thresholdMode          String   @default("modular") @map("threshold_mode")
+    caseCount              Int      @default(0) @map("case_count")
+
+    // Counter module ──────────
+    counterModule    Boolean  @default(false) @map("counter_module")
+    counterChannelId String?  @map("counter_channel_id")
+    counterMessageId String?  @map("counter_message_id")
+
+    // Tickets module ──────────
+    ticketsModule              Boolean  @default(false) @map("tickets_module")
+    ticketsPanelChannelId      String?  @map("tickets_panel_channel_id")
+    ticketsCategoryId          String?  @map("tickets_category_id")
+    ticketsTranscriptChannelId String?  @map("tickets_transcript_channel_id")
+    ticketsLogChannelId        String?  @map("tickets_log_channel_id")
+    ticketsSupporterRoleIds    String[] @map("tickets_supporter_role_ids")
+    ticketsPanelMessageId      String?  @map("tickets_panel_message_id")
+
+    // General ──────────
+    locale          String  @default("en-US") @map("locale")
+    prefix          String  @default("a!") @map("prefix")
+    mentionResponse String? @map("mention_response")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("guild_configs")
+}
+
+// ─────────────────────────────────────────────
+//  ModThreshold
+// ─────────────────────────────────────────────
+
+model ModThreshold {
+    id          Int      @id @default(autoincrement())
+    guildId     String   @map("guild_id")
+    triggerType String   @default("warn") @map("trigger_type") // What we count (warn, mute, timeout, etc.)
+    threshold   Int      @map("threshold")    // How many occurrences
+    action      String   @map("action")       // Action to apply
+    duration    String?  @map("duration")
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([guildId, triggerType, threshold], name: "guild_trigger_threshold_unique")
+    @@map("mod_thresholds")
+}
+
+// ─────────────────────────────────────────────
+//  ActiveTempBan
+// ─────────────────────────────────────────────
+
+model ActiveTempBan {
+    id          Int      @id @default(autoincrement())
+    guildId     String   @map("guild_id")
+    userId      String   @map("user_id")
+    moderatorId String   @map("moderator_id")
+    reason      String?  @db.VarChar(500)
+    caseNumber  Int      @default(0) @map("case_number")
+    expiresAt   DateTime @map("expires_at")
+    createdAt   DateTime @default(now()) @map("created_at")
+
+    @@unique([guildId, userId], name: "tempban_guild_user_unique")
+    @@index([guildId, userId])
+    @@map("active_tempbans")
+}
+
+// ─────────────────────────────────────────────
+//  SilentBan
+// ─────────────────────────────────────────────
+
+model SilentBan {
+    id          Int      @id @default(autoincrement())
+    guildId     String   @map("guild_id")
+    userId      String   @map("user_id")
+    moderatorId String   @map("moderator_id")
+    reason      String?  @db.VarChar(500)
+    caseNumber  Int      @default(0) @map("case_number")
+    expiresAt   DateTime? @map("expires_at")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    @@unique([guildId, userId], name: "guild_user_unique")
+    @@index([guildId, userId])
+    @@map("silent_bans")
+}
+
+// ─────────────────────────────────────────────
+//  WarnLog
+// ─────────────────────────────────────────────
+
+model WarnLog {
+    id          Int      @id @default(autoincrement())
+    guildId     String   @map("guild_id")
+    userId      String   @map("user_id")
+    moderatorId String   @map("moderator_id")
+    reason      String?  @db.VarChar(500)
+    caseNumber  Int      @default(0) @map("case_number")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    @@index([guildId, userId], name: "warn_guild_user")
+    @@map("warn_logs")
+}
+
+// ─────────────────────────────────────────────
+//  ModLog
+// ─────────────────────────────────────────────
+
+model ModLog {
+    id          Int      @id @default(autoincrement())
+    guildId     String   @map("guild_id")
+    userId      String   @map("user_id")
+    moderatorId String   @map("moderator_id")
+    action      String
+    reason      String?  @db.VarChar(500)
+    duration    String?
+    caseNumber  Int      @default(0) @map("case_number")
+    isAutomatic Boolean  @default(false) @map("is_automatic") // New field to label auto-sanctions
+    expiresAt   DateTime? @map("expires_at")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    @@index([guildId, userId], name: "modlog_guild_user")
+    @@index([guildId, caseNumber], name: "modlog_guild_case_lookup")
+    @@index([guildId, userId, isAutomatic, action, createdAt], name: "modlog_threshold_lookup")
+    @@map("mod_logs")
+}
+
+// ─────────────────────────────────────────────
+//  ActiveMute
+// ─────────────────────────────────────────────
+
+model ActiveMute {
+    id          Int      @id @default(autoincrement())
+    guildId     String   @map("guild_id")
+    userId      String   @map("user_id")
+    moderatorId String   @map("moderator_id")
+    reason      String?  @db.VarChar(500)
+    caseNumber  Int      @default(0) @map("case_number")
+    expiresAt   DateTime? @map("expires_at")
+    createdAt   DateTime @default(now()) @map("created_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+
+    @@unique([guildId, userId], name: "mute_guild_user_unique")
+    @@index([guildId, userId])
+    @@map("active_mutes")
+}
+
+// ─────────────────────────────────────────────
+//  ModPermission
+// ─────────────────────────────────────────────
+
+model ModPermission {
+    id         String     @id @default(cuid())
+    guildId    String     @map("guild_id")
+    targetId   String     @map("target_id")
+    targetType TargetType @map("target_type")
+    action     String
+    type       PermType
+
+    @@unique([guildId, targetId, action], name: "guildId_targetId_action")
+    @@index([guildId])
+    @@map("mod_permissions")
+}
+
+enum TargetType {
+    ROLE
+    MEMBER
+}
+
+enum PermType {
+    ALLOW
+    DENY
+}
+
+// ─────────────────────────────────────────────
+//  BotCommander
+// ─────────────────────────────────────────────
+
+model BotCommander {
+    id         String     @id @default(cuid())
+    guildId    String     @map("guild_id")
+    targetId   String     @map("target_id")
+    targetType TargetType @map("target_type")
+
+    @@unique([guildId, targetId], name: "bot_commander_guild_target_unique")
+    @@index([guildId])
+    @@map("bot_commanders")
+}
+
+// ─────────────────────────────────────────────
+//  Ticket
+// ─────────────────────────────────────────────
+
+model Ticket {
+    id             Int       @id @default(autoincrement())
+    guildId        String    @map("guild_id")
+    channelId      String    @unique @map("channel_id")
+    userId         String    @map("user_id")
+    claimedById    String?   @map("claimed_by_id")
+    status         String    @default("open") @map("status")
+    autoCloseJobId String?   @map("auto_close_job_id")
+    ticketNumber   Int       @map("ticket_number")
+    createdAt      DateTime  @default(now()) @map("created_at")
+    updatedAt      DateTime  @updatedAt @map("updated_at")
+    closedAt       DateTime? @map("closed_at")
+
+    @@unique([guildId, ticketNumber], name: "ticket_guild_number_unique")
+    @@index([guildId, userId])
+    @@index([guildId, status])
+    @@map("tickets")
+}
