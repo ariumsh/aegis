@@ -14,6 +14,100 @@ function redisKey(guildId: string, userId: string): string {
 }
 
 
+// In-memory index ──────────────────
+//
+// Enforcement has to answer "is this user silent banned?" for every message in
+// every guild the bot is in. Asking Redis each time adds a round trip to the
+// hot path of the busiest event the gateway produces, so the active set is held
+// in memory instead and consulted synchronously.
+//
+// It is small by nature — silent bans are rare and only unexpired ones are kept
+// — and it is authoritative because every write path below updates it. Redis
+// and PostgreSQL remain the durable stores; this is only a read accelerator,
+// rebuilt from PostgreSQL on every boot.
+
+/** guildId -> userId -> expiry in epoch ms, or null when permanent. */
+const activeBans = new Map<string, Map<string, number | null>>();
+
+/**
+ * False until the index has been loaded from PostgreSQL.
+ *
+ * Enforcement treats an unloaded index as "nobody is banned" rather than
+ * blocking, so a slow start delays enforcement instead of stalling the gateway.
+ */
+let indexReady = false;
+
+function indexAdd(guildId: string, userId: string, expiresAt: Date | null): void {
+    let guild = activeBans.get(guildId);
+    if (!guild) {
+        guild = new Map();
+        activeBans.set(guildId, guild);
+    }
+    guild.set(userId, expiresAt ? expiresAt.getTime() : null);
+}
+
+function indexRemove(guildId: string, userId: string): void {
+    const guild = activeBans.get(guildId);
+    if (!guild) return;
+    guild.delete(userId);
+    if (guild.size === 0) activeBans.delete(guildId);
+}
+
+/**
+ * Synchronous lookup for the enforcement path. No I/O.
+ *
+ * Expiry is checked on read as well as being swept by the queue, so a ban still
+ * lapses on time even if the expiry job was lost — the queue is durable, but a
+ * user should not stay silenced because a job went missing.
+ */
+export function isSilentBannedCached(guildId: string, userId: string): boolean {
+    if (!indexReady) return false;
+
+    const guild = activeBans.get(guildId);
+    if (!guild) return false;
+
+    const expiresAt = guild.get(userId);
+    if (expiresAt === undefined) return false;
+
+    if (expiresAt !== null && expiresAt <= Date.now()) {
+        indexRemove(guildId, userId);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Rebuilds the index from PostgreSQL. Called once from the Ready listener.
+ *
+ * Failure is not fatal: the bot runs with enforcement inactive rather than
+ * refusing to start, which is the same trade-off isSilentBanned makes when the
+ * datastores are unreachable.
+ */
+export async function loadSilentBanIndex(): Promise<number> {
+    try {
+        const bans = await prisma.silentBan.findMany({
+            where: {
+                OR: [
+                    { expiresAt: null },
+                    { expiresAt: { gt: new Date() } }
+                ]
+            }
+        });
+
+        activeBans.clear();
+        for (const ban of bans) indexAdd(ban.guildId, ban.userId, ban.expiresAt);
+        indexReady = true;
+
+        container.logger.info(`[SILENTBAN] Index loaded: ${bans.length} active ban(s).`);
+        return bans.length;
+    } catch (error) {
+        container.logger.error('[SILENTBAN] Could not load the index; enforcement stays inactive:', error);
+        return 0;
+    }
+}
+
+
 // Returns whether a user is currently silent banned, checking Redis first then DB ──────────
 
 export async function isSilentBanned(guildId: string, userId: string): Promise<boolean> {
@@ -132,6 +226,8 @@ export async function addSilentBan(
         await redisConnection.set(redisKey(guildId, userId), '1');
     }
 
+    indexAdd(guildId, userId, expiresAt);
+
     container.logger.info(`[SILENTBAN] 🔇 Silent ban applied to ${userId} in ${guildId}${expiresAt ? ` (expires: ${expiresAt.toISOString()})` : ' (permanent)'}`);
 
     silentBanQueue.add(
@@ -155,6 +251,8 @@ export async function removeSilentBan(guildId: string, userId: string): Promise<
     const job = await silentBanQueue.getJob(`expire-${guildId}-${userId}`).catch(() => null);
     if (job) await job.remove().catch(() => {});
 
+    indexRemove(guildId, userId);
+
     container.logger.info(`[SILENTBAN] 🔊 Silent ban removed for ${userId} in ${guildId}`);
 }
 
@@ -172,36 +270,4 @@ export async function listSilentBans(guildId: string): Promise<SilentBan[]> {
         },
         orderBy: { createdAt: 'desc' },
     });
-}
-
-
-// Warms the Redis cache with all active silent bans for a guild ──────────
-
-export async function warmCache(guildId: string): Promise<void> {
-    try {
-        const bans = await prisma.silentBan.findMany({
-            where: {
-                guildId,
-                OR: [
-                    { expiresAt: null },
-                    { expiresAt: { gt: new Date() } }
-                ]
-            }
-        });
-
-        const pipeline = redisConnection.pipeline();
-        for (const ban of bans) {
-            if (ban.expiresAt) {
-                const ttl = Math.max(1, Math.floor((ban.expiresAt.getTime() - Date.now()) / 1000));
-                pipeline.set(redisKey(ban.guildId, ban.userId), '1', 'EX', ttl);
-            } else {
-                pipeline.set(redisKey(ban.guildId, ban.userId), '1');
-            }
-        }
-        await (pipeline as any).exec();
-
-        container.logger.info(`[SILENTBAN] 🔥 Cache warmed: ${bans.length} active bans loaded.`);
-    } catch (err: any) {
-        container.logger.error(`[SILENTBAN] ❌ Error warming cache: ${err.message}`);
-    }
 }
