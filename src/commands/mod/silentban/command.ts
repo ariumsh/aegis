@@ -9,6 +9,7 @@ import { AegisUserError } from '../../../lib/structures/Errors';
 import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
 import { requireModPermission } from '../../../command-helpers/mod/shared/permissionGuard';
+import { validateMod } from '../../../lib/utils/ModUtils';
 
 
 // Constants ──────────────────
@@ -92,6 +93,17 @@ export class SilentBanCommand extends Subcommand {
 
         if (target.id === interaction.user.id) throw new AegisUserError('modcommands:mod.silentban.self');
         if (target.bot) throw new AegisUserError('modcommands:mod.silentban.bot');
+
+        // Every other sanctioning command runs validateMod, which blocks acting
+        // on someone whose highest role is at or above the invoker's. Without it
+        // a moderator holding only a silentban ALLOW override could sanction
+        // administrators and the guild owner.
+        //
+        // Resolved leniently: a silent ban may legitimately be placed on a user
+        // who is not currently in the guild, and there is no hierarchy to check
+        // in that case.
+        const targetMember = await interaction.guild?.members.fetch(target.id).catch(() => null);
+        if (targetMember) await validateMod(interaction, targetMember);
 
         const durationMs = duration ? DURATION_MAP[duration] : null;
 

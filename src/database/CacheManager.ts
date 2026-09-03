@@ -197,8 +197,31 @@ export class CacheManager {
     // Deletes all cached keys for a guild ──────────
 
     public static async clearGuild(guildId: string) {
-        const { redis } = container;
-        const keys = await redis.keys(`*:${guildId}`);
-        if (keys.length > 0) await redis.del(...keys);
+        await deleteMatching(`*:${guildId}`);
     }
+}
+
+/**
+ * Deletes every key matching a pattern, cursor by cursor.
+ *
+ * KEYS walks the entire keyspace in one blocking call, and this Redis instance
+ * is both the read path for all guild configuration and the transport for
+ * BullMQ. A module reset on a busy instance would stall the whole bot. SCAN
+ * gives the server room to breathe between batches.
+ */
+export async function deleteMatching(pattern: string): Promise<number> {
+    const { redis } = container;
+    let cursor = '0';
+    let removed = 0;
+
+    do {
+        const [next, keys] = await redis.scan(cursor, 'MATCH', pattern, 'COUNT', 100);
+        cursor = next;
+        if (keys.length > 0) {
+            await redis.del(...keys);
+            removed += keys.length;
+        }
+    } while (cursor !== '0');
+
+    return removed;
 }

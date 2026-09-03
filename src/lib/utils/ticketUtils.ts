@@ -83,6 +83,40 @@ export function buildChannelPermissions(guild: Guild, userId: string, supporterR
 }
 
 
+/**
+ * Escapes text for interpolation into HTML.
+ *
+ * Every value in a transcript is authored by whoever was in the ticket, so all
+ * of it is untrusted. Escaping only < and > is not enough: an attribute value is
+ * escaped out of with a bare quote, and & has to be handled first or it
+ * double-encodes the entities this function itself produces.
+ */
+function escapeHtml(value: unknown): string {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
+ * Escapes a URL for an href, refusing anything that is not plain http(s).
+ *
+ * Attachment URLs come back from Discord's CDN and should always be https, but
+ * the transcript is opened from disk in a browser and a javascript: href would
+ * run there, so the scheme is checked rather than assumed.
+ */
+function safeHref(value: unknown): string {
+    try {
+        const url = new URL(String(value ?? ''));
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return '#';
+        return escapeHtml(url.toString());
+    } catch {
+        return '#';
+    }
+}
+
 export async function generateTranscript(channel: TextChannel): Promise<AttachmentBuilder> {
     const allMessages: any[] = [];
     let lastId: string | undefined;
@@ -98,16 +132,20 @@ export async function generateTranscript(channel: TextChannel): Promise<Attachme
 
     const rows = allMessages.map(m => {
         const time = new Date(m.createdTimestamp).toISOString().replace('T', ' ').slice(0, 19);
-        const content = m.content?.replace(/</g, '&lt;').replace(/>/g, '&gt;') || '';
-        const attachments = m.attachments.map((a: any) => `<a href="${a.url}">[attachment: ${a.name}]</a>`).join(' ');
-        return `<div class="msg"><span class="ts">${time}</span> <span class="author">${m.author.tag}</span>: <span class="content">${content} ${attachments}</span></div>`;
+        const content = escapeHtml(m.content);
+        const attachments = m.attachments
+            .map((a: any) => `<a href="${safeHref(a.url)}">[attachment: ${escapeHtml(a.name)}]</a>`)
+            .join(' ');
+        return `<div class="msg"><span class="ts">${escapeHtml(time)}</span> <span class="author">${escapeHtml(m.author.tag)}</span>: <span class="content">${content} ${attachments}</span></div>`;
     }).join('\n');
 
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Transcript — #${channel.name}</title>
+    const safeChannelName = escapeHtml(channel.name);
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Transcript — #${safeChannelName}</title>
 <style>body{font-family:monospace;background:#1e1e2e;color:#cdd6f4;padding:1rem}
 .msg{padding:2px 0}.ts{color:#6c7086}.author{color:#89b4fa;font-weight:bold}.content{color:#cdd6f4}
 a{color:#89dceb}</style></head><body>
-<h2>Transcript: #${channel.name}</h2>
+<h2>Transcript: #${safeChannelName}</h2>
 ${rows}
 </body></html>`;
 

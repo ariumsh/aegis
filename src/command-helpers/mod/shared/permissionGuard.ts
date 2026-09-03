@@ -1,5 +1,6 @@
 import { UserError } from '@sapphire/framework';
-import { GuildMember, PermissionsBitField } from 'discord.js';
+import { GuildMember, Message, PermissionsBitField } from 'discord.js';
+import type { Command } from '@sapphire/framework';
 import { CacheManager } from '../../../database/CacheManager.js';
 
 export type ModAction =
@@ -107,5 +108,56 @@ export async function requireModPermission(member: GuildMember, action: ModActio
     if (nativePerm && member.permissions.has(nativePerm)) return;
 
     // Step 6: no path to access
+    throw new UserError({ identifier: 'modcommands:perms.errors.noPermission', message: 'You do not have permission to use this command.' });
+}
+
+/**
+ * Same check, resolved from whichever surface invoked the command.
+ *
+ * Both entry points a command exposes -- the slash interaction and the prefix
+ * message -- funnel through here, which is the point: setDefaultMemberPermissions
+ * only constrains the slash command in Discord's own UI and has no effect
+ * whatsoever on the prefix path. A command that relies on it alone is unguarded
+ * for anyone who types the prefix, so the check has to live in the shared
+ * execution path rather than in the registration builder.
+ */
+export async function requireModPermissionFrom(
+    source: Command.ChatInputCommandInteraction | Message,
+    action: ModAction
+): Promise<void> {
+    const member = source.member;
+
+    // A partial APIInteractionGuildMember carries roles as plain ids and cannot
+    // be resolved against, and outside a guild there is nothing to resolve at
+    // all. Either way there is no basis on which to grant access.
+    if (!(member instanceof GuildMember)) {
+        throw new UserError({ identifier: 'errors:guildOnly', message: 'This command can only be used in a server.' });
+    }
+
+    await requireModPermission(member, action);
+}
+
+/**
+ * Guild-administration guard for configuration commands.
+ *
+ * These register with setDefaultMemberPermissions(Administrator), which -- as
+ * above -- covers only the slash surface. Any of them that also exposes a
+ * prefix path needs this on the shared route.
+ *
+ * Bot Commanders pass because that table exists precisely to grant bot-admin
+ * authority without handing out Discord's Administrator permission.
+ */
+export async function requireGuildAdmin(
+    source: Command.ChatInputCommandInteraction | Message
+): Promise<void> {
+    const member = source.member;
+
+    if (!(member instanceof GuildMember)) {
+        throw new UserError({ identifier: 'errors:guildOnly', message: 'This command can only be used in a server.' });
+    }
+
+    if (member.permissions.has(PermissionsBitField.Flags.Administrator)) return;
+    if (await isBotCommander(member)) return;
+
     throw new UserError({ identifier: 'modcommands:perms.errors.noPermission', message: 'You do not have permission to use this command.' });
 }

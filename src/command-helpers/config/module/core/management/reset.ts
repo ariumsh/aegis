@@ -2,7 +2,7 @@ import { Subcommand } from "@sapphire/plugin-subcommands";
 import { resolveKey } from "@sapphire/plugin-i18next";
 import { CategoryChannel, ChannelType, ComponentType } from "discord.js";
 import { prisma } from "../../../../../database/db";
-import { CacheManager } from "../../../../../database/CacheManager";
+import { CacheManager, deleteMatching } from "../../../../../database/CacheManager";
 import {
   applyLoadingState,
   getCancelledLayout,
@@ -116,8 +116,7 @@ const RESET_MAP: Record<string, ResetHandler> = {
     await prisma.ticket.deleteMany({ where: { guildId } });
 
     // Clear all tickets Redis runtime keys for this guild
-    const ticketKeys = await container.redis.keys(`tickets:*:${guildId}*`);
-    if (ticketKeys.length > 0) await container.redis.del(...ticketKeys);
+    await deleteMatching(`tickets:*:${guildId}*`);
 
     const updated = await prisma.guildConfig.update({
       where: { guildId },

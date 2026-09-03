@@ -16,5 +16,6 @@
   "mod_hierarchy": "{{cross}} No puedes moderar a este miembro porque tiene un rol superior o igual al tuyo.",
   "mod_invalidDuration": "{{cross}} Duración inválida. Usa: `1d`, `2h`, `30m` o una combinación como `1d2h30m`.",
   "mod_self": "{{cross}} No puedes moderarte a ti mismo.",
-  "mod_bot": "{{cross}} No puedes moderar a un bot."
+  "mod_bot": "{{cross}} No puedes moderar a un bot.",
+  "guildOnly": "{{cross}} Este comando solo puede usarse en un servidor."
 }

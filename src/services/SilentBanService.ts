@@ -2,6 +2,7 @@ import { prisma } from '../database/db';
 import { redis as redisConnection } from '../database/Redis';
 import { silentBanQueue } from '../lib/utils/SilentBanQueue';
 import type { SilentBan } from '@prisma/client';
+import { container } from '@sapphire/framework';
 
 
 // Silent ban service ──────────────────
@@ -48,7 +49,7 @@ export async function isSilentBanned(guildId: string, userId: string): Promise<b
         await redisConnection.set(redisKey(guildId, userId), '0', 'EX', 300);
         return false;
     } catch (err: any) {
-        console.error(`[SILENTBAN] ❌ Error in isSilentBanned (primary): ${err.message}`);
+        container.logger.error(`[SILENTBAN] ❌ Error in isSilentBanned (primary): ${err.message}`);
         try {
             const ban = await prisma.silentBan.findFirst({
                 where: {
@@ -62,8 +63,20 @@ export async function isSilentBanned(guildId: string, userId: string): Promise<b
             });
             return !!ban;
         } catch (dbErr: any) {
-            console.error(`[SILENTBAN] ❌ Error in isSilentBanned (DB fallback): ${dbErr.message}`);
-            return true;
+            // Fail open. With both Redis and PostgreSQL unreachable there is no
+            // way to tell a sanctioned user from anyone else, and this answer
+            // decides whether to delete someone's messages and disconnect them
+            // from voice. Returning true would apply that to every user in every
+            // guild for the duration of the outage, turning a database incident
+            // into a mass moderation incident.
+            //
+            // Letting a silent ban lapse while the datastores are down is the
+            // cheaper failure by a wide margin, and it self-corrects the moment
+            // either store recovers.
+            container.logger.error(
+                `[SILENTBAN] Cache and database both unavailable for ${userId} in ${guildId}; treating as not banned: ${dbErr.message}`
+            );
+            return false;
         }
     }
 }
@@ -97,7 +110,7 @@ export async function addSilentBan(
     const oldJob = await silentBanQueue.getJob(`expire-${guildId}-${userId}`).catch(() => null);
     if (oldJob) {
         await oldJob.remove().catch((error: any) => {
-            console.warn(`[SILENTBAN] Failed to remove previous expire job for ${userId} in ${guildId}: ${error?.message ?? error}`);
+            container.logger.warn(`[SILENTBAN] Failed to remove previous expire job for ${userId} in ${guildId}: ${error?.message ?? error}`);
         });
     }
 
@@ -119,14 +132,14 @@ export async function addSilentBan(
         await redisConnection.set(redisKey(guildId, userId), '1');
     }
 
-    console.info(`[SILENTBAN] 🔇 Silent ban applied to ${userId} in ${guildId}${expiresAt ? ` (expires: ${expiresAt.toISOString()})` : ' (permanent)'}`);
+    container.logger.info(`[SILENTBAN] 🔇 Silent ban applied to ${userId} in ${guildId}${expiresAt ? ` (expires: ${expiresAt.toISOString()})` : ' (permanent)'}`);
 
     silentBanQueue.add(
         'voice_disconnect',
         { guildId, userId },
         { jobId: `vcdis-ban-${guildId}-${userId}`, removeOnComplete: true, removeOnFail: true, attempts: 1 }
     ).catch((error: any) => {
-        console.warn(`[SILENTBAN] Failed to enqueue voice disconnect job for ${userId} in ${guildId}: ${error?.message ?? error}`);
+        container.logger.warn(`[SILENTBAN] Failed to enqueue voice disconnect job for ${userId} in ${guildId}: ${error?.message ?? error}`);
     });
 
     return ban;
@@ -142,7 +155,7 @@ export async function removeSilentBan(guildId: string, userId: string): Promise<
     const job = await silentBanQueue.getJob(`expire-${guildId}-${userId}`).catch(() => null);
     if (job) await job.remove().catch(() => {});
 
-    console.info(`[SILENTBAN] 🔊 Silent ban removed for ${userId} in ${guildId}`);
+    container.logger.info(`[SILENTBAN] 🔊 Silent ban removed for ${userId} in ${guildId}`);
 }
 
 
@@ -187,8 +200,8 @@ export async function warmCache(guildId: string): Promise<void> {
         }
         await (pipeline as any).exec();
 
-        console.info(`[SILENTBAN] 🔥 Cache warmed: ${bans.length} active bans loaded.`);
+        container.logger.info(`[SILENTBAN] 🔥 Cache warmed: ${bans.length} active bans loaded.`);
     } catch (err: any) {
-        console.error(`[SILENTBAN] ❌ Error warming cache: ${err.message}`);
+        container.logger.error(`[SILENTBAN] ❌ Error warming cache: ${err.message}`);
     }
 }

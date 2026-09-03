@@ -1,6 +1,7 @@
 import { Args, Command } from '@sapphire/framework';
 import { PermissionFlagsBits, Message } from 'discord.js';
 import { AegisUserError } from '../../../lib/structures/Errors';
+import { requireGuildAdmin } from '../../../command-helpers/mod/shared/permissionGuard';
 import modulesEnUs from '../../../lib/i18n/en-US/modules.json';
 import modulesEsEs from '../../../lib/i18n/es-ES/modules.json';
 import {
@@ -62,6 +63,8 @@ export class LanguageCommand extends Command {
     }
 
     public override async messageRun(message: Message, args: Args) {
+        await requireGuildAdmin(message);
+
         const newLocaleInput = await args.pick('string').catch(() => {
             throw new AegisUserError('modules:config.language.invalid');
         });

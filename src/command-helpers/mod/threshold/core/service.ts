@@ -7,6 +7,7 @@ import { CacheManager } from '../../../../database/CacheManager';
 import { Emojis } from '../../../../lib/constants/emojis';
 import { ContainerComponent, TextDisplayComponent } from '../../../../lib/layouts/ui';
 import { AegisUserError } from '../../../../lib/structures/Errors';
+import { requireModPermissionFrom } from '../../shared/permissionGuard';
 
 export const VALID_TRIGGERS = ['all', 'warn', 'mute', 'timeout', 'kick', 'ban', 'tempban', 'softban'] as const;
 export const VALID_ACTIONS = ['mute', 'timeout', 'kick', 'ban', 'tempban', 'softban'] as const;
@@ -69,6 +70,7 @@ export async function executeAddThreshold(data: {
 }) {
     const { source, guildId, trigger, count, action, duration } = data;
 
+    await requireModPermissionFrom(source, 'threshold');
     await requireThresholds(guildId);
 
     const rule = await prisma.modThreshold.upsert({
@@ -113,6 +115,7 @@ export async function executeListThreshold(data: {
 }) {
     const { source, guildId, triggerFilter } = data;
 
+    await requireModPermissionFrom(source, 'threshold');
     await requireThresholds(guildId);
 
     if (triggerFilter && !VALID_TRIGGERS.includes(triggerFilter as ThresholdTrigger)) {
@@ -169,6 +172,7 @@ export async function executeRemoveThreshold(data: {
 }) {
     const { source, guildId, id } = data;
 
+    await requireModPermissionFrom(source, 'threshold');
     await requireThresholds(guildId);
 
     const rule = await prisma.modThreshold.findUnique({ where: { id } });
