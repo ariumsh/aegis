@@ -1,0 +1,28 @@
+{
+  "command": {
+    "botCommander": {
+      "description": "Designate roles or members as Bot Commanders",
+      "subcommands": {
+        "allow": "Grant Bot Commander status to a role or member",
+        "remove": "Remove Bot Commander status from a role or member"
+      },
+      "options": {
+        "role": "Role to target",
+        "member": "Member to target"
+      }
+    }
+  },
+  "botCommander": {
+    "allow": {
+      "success": "{{name}} is now a Bot Commander."
+    },
+    "remove": {
+      "success": "Removed Bot Commander from {{name}}.",
+      "notFound": "{{name}} is not a Bot Commander."
+    },
+    "errors": {
+      "noTarget": "You must specify either a role or a member.",
+      "bothTargets": "Specify either a role or a member, not both."
+    }
+  }
+}

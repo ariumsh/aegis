@@ -1,0 +1,233 @@
+{
+  "config": {
+    "language": {
+      "command": {
+        "description": "Change the bot language."
+      },
+      "optionDescription": "Select the new language",
+      "display": {
+        "english": "English",
+        "spanish": "Español"
+      },
+      "invalid": "{{cross}} Invalid language. Available: `en`, `es`.",
+      "success": "{{check}} Language updated to **{{lang}}**."
+    },
+    "prefix": {
+      "command": {
+        "description": "Change the bot prefix for this server"
+      },
+      "optionDescription": "The new prefix (max 5 chars, no spaces)",
+      "invalid": "{{cross}} The prefix must be between 1 and 5 characters and cannot contain spaces.",
+      "success": "{{check}} The prefix has been updated to: `{{prefix}}`"
+    },
+    "mention": {
+      "command": {
+        "description": "Customize the bot's mention response message"
+      },
+      "optionDescription": "The message to send when the bot is mentioned (leave empty to reset)",
+      "reset": "{{check}} The mention response has been reset to the default.",
+      "success": "{{check}} Mention response updated.",
+      "defaultResponse": "Hi! My prefix is `{{prefix}}`."
+    }
+  },
+  "module": {
+    "command": {
+      "description": "Manage Aegis system modules",
+      "subcommands": {
+        "setup": "Configure a specific module",
+        "settings": "Show detailed configuration",
+        "enable": "Enable a module",
+        "disable": "Disable a module",
+        "reset": "Factory reset a module"
+      },
+      "options": {
+        "moduleNameSetup": "The name of the module",
+        "moduleName": "Module name"
+      }
+    },
+    "notFound": "{{cross}} Module not found.",
+    "alreadyEnabled": "{{cross}} The module **{{name}}** is already enabled.",
+    "alreadyDisabled": "{{cross}} The module **{{name}}** is already disabled.",
+    "displayNames": {
+      "vanity": "Vanity Tracker",
+      "mod": "Moderation",
+      "tickets": "Tickets",
+      "counter": "Member Counter"
+    },
+    "errors": {
+      "validatorNotFound": "`❌` Internal error: validator not found.",
+      "needsLogChannel": "`❌` **{{name}}** module needs a log channel before being enabled. Run `/module setup` first.",
+      "cannotEnable": "`❌` **{{name}}** module cannot be enabled:",
+      "setupFirst": "Run `/module setup` first."
+    },
+    "enabled": "enabled",
+    "disabled": "disabled",
+    "enableSuccess": "The module **{{name}}** has been enabled.",
+    "disableSuccess": "The module **{{name}}** has been disabled.",
+    "resetSuccess": "{{check}} The module **{{name}}** has been reset.",
+    "setupSuccess": "{{check}} The module **{{name}}** has been configured.",
+    "setup": {
+      "confirm": {
+        "description": "Aegis will perform the following actions to set up the **{{title}}** module:",
+        "button": "Confirm Setup",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "setupCancelled": "❌ Setup cancelled.",
+        "setupAborted": "❌ Setup aborted.",
+        "setupFailed": "❌ Setup failed. Please try again.",
+        "setupTimedOut": "⏱️ Setup timed out. Please try again.",
+        "roleIdNotFound": "`❌` The role ID provided does not exist.",
+        "channelIdNotFound": "`❌` The channel ID provided does not exist."
+      },
+      "summary": {
+        "completeHint": "Setup complete. You can now enable the module with `/module enable`.",
+        "setKeyword": "Set keyword: `{{keyword}}`",
+        "keywordSet": "Keyword set to `{{keyword}}`",
+        "channelLinked": "Channel linked: <#{{id}}>",
+        "channelCreated": "Channel created: <#{{id}}>",
+        "roleLinked": "Role linked: <@&{{id}}>",
+        "roleCreated": "Role created: <@&{{id}}>"
+      },
+      "actions": {
+        "createRole": "Create role: **{{name}}**",
+        "useRole": "Use existing role: {{name}}",
+        "createChannel": "Create channel: **#{{name}}**",
+        "useChannel": "Use existing channel: <#{{id}}>"
+      },
+      "vanity": {
+        "modal": {
+          "title": "Vanity Tracker Setup",
+          "keywordLabel": "Status keyword (required)",
+          "keywordPlaceholder": "e.g. discord.gg/meetspace",
+          "roleLabel": "Role ID or name (optional)",
+          "rolePlaceholder": "Vanity role | Leave empty to auto-create",
+          "channelLabel": "Channel ID or name (optional)",
+          "channelPlaceholder": "Log channel | Leave empty to auto-create"
+        }
+      },
+      "mod": {
+        "modal": {
+          "title": "Moderation Setup",
+          "logChannelLabel": "Log channel ID or name (optional)",
+          "logChannelPlaceholder": "Leave empty to auto-create #mod-logs",
+          "mutedRoleLabel": "Muted role ID or name (optional)",
+          "mutedRolePlaceholder": "Leave empty to auto-create a muted role",
+          "thresholdsLabel": "Enable thresholds? (Yes/No)",
+          "thresholdsPlaceholder": "Yes",
+          "thresholdsValueEnabled": "Yes",
+          "thresholdsValueDisabled": "No"
+        },
+        "summary": {
+          "thresholds": "Thresholds: **{{status}}**",
+          "mutedOverwrites": "Muted overwrites synced: **{{updated}}** channels",
+          "mutedOverwritesWithFailures": "Muted overwrites synced: **{{updated}}** channels ({{failed}} failed)"
+        }
+      },
+      "tickets": {
+        "modal": {
+          "title": "Tickets Setup",
+          "panelChannelLabel": "Panel channel ID (required)",
+          "panelChannelPlaceholder": "Leave blank to auto-create",
+          "categoryLabel": "Category channel ID (optional)",
+          "categoryPlaceholder": "Leave blank to auto-create",
+          "transcriptChannelLabel": "Transcript channel ID (optional)",
+          "transcriptChannelPlaceholder": "Leave blank to auto-create",
+          "logChannelLabel": "Log channel ID (optional)",
+          "logChannelPlaceholder": "Leave blank to auto-create",
+          "supporterRolesLabel": "Supporter role IDs (comma-separated)",
+          "supporterRolesPlaceholder": "e.g. 123456789, 987654321"
+        },
+        "panelDescription": "Click the button below to open a support ticket. Our team will assist you as soon as possible."
+      },
+      "counter": {
+        "modal": {
+          "title": "Member Counter Setup",
+          "channelLabel": "Channel ID or name (optional)",
+          "channelPlaceholder": "Leave empty to auto-create #server-stats"
+        },
+        "errors": {
+          "wrongChannelType": "`❌` The counter needs a text or announcement channel.",
+          "missingPermissions": "`❌` I need **View Channel** and **Send Messages** in <#{{id}}>."
+        },
+        "summary": {
+          "published": "Counter published in <#{{id}}>"
+        }
+      }
+    },
+    "reset": {
+      "title": "Reset {{name}}",
+      "description": "This will wipe all **{{name}}** module configuration from this server.",
+      "confirm": "Yes, reset",
+      "cancel": "Cancel",
+      "success": "✅ Module **{{name}}** has been reset.",
+      "cancelled": "❌ Reset cancelled.",
+      "timedOut": "⏱️ Timed out. No response received.",
+      "deletions": {
+        "deleteChannel": "delete:Channel <#{{id}}>",
+        "unlinkChannel": "unlink:Channel <#{{id}}>",
+        "deleteRole": "delete:Role <@&{{id}}>",
+        "unlinkRole": "unlink:Role <@&{{id}}>",
+        "configOnly": "unlink:Configuration data only"
+      }
+    }
+  },
+  "prefix": {
+    "invalid": "{{cross}} The prefix must be between 1 and 5 characters and cannot contain spaces.",
+    "success": "{{check}} The prefix has been updated to: `{{prefix}}`"
+  },
+  "tickets": {
+    "notFound": "{{cross}} Ticket not found.",
+    "moduleDisabled": "{{cross}} The tickets module is not enabled.",
+    "alreadyOpen": "{{cross}} You already have an open ticket.",
+    "openFailed": "{{cross}} Could not open the ticket. Please try again.",
+    "opened": "{{check}} Ticket opened. Head over to {{channel}}",
+    "closeDenied": "{{cross}} Only supporters or the ticket owner can close this ticket.",
+    "alreadyClosed": "{{cross}} This ticket is already closed.",
+    "claimDenied": "{{cross}} Only supporters can claim tickets.",
+    "alreadyClaimed": "{{cross}} This ticket is already claimed by {{user}}.",
+    "claimed": "{{check}} You claimed ticket #{{number}}.",
+    "remindNotClaimer": "{{cross}} Only the staff member who claimed this ticket can send a reminder.",
+    "remindUnclaimed": "{{cross}} This ticket must be claimed before a reminder can be sent.",
+    "remindCooldown": "{{cross}} A reminder was already sent recently. Wait 30 seconds.",
+    "remindSent": "{{check}} Reminder sent. The ticket will auto-close in 20 minutes if there is no response.",
+    "reopenDenied": "{{cross}} Only supporters can reopen tickets.",
+    "deleteDenied": "{{cross}} Only supporters can delete tickets.",
+    "deleteNotClosed": "{{cross}} Close the ticket before deleting it.",
+    "log": {
+      "opened": "opened",
+      "closed": "closed",
+      "claimed": "claimed",
+      "reopened": "reopened",
+      "deleted": "deleted",
+      "auto_closed": "auto closed",
+      "system": "System",
+      "entry": "**Ticket #{{number}}** {{event}} | User: {{user}} | By: {{actor}}"
+    },
+    "transcript": {
+      "channel": "Transcript — **Ticket #{{number}}** | {{user}}",
+      "dm": "Here's your ticket transcript for **#{{number}}** in **{{guild}}**:"
+    }
+  },
+  "validation": {
+    "vanity": {
+      "keyword": "The **keyword** (status text) has not been configured.",
+      "role": "The **reward role** has not been configured or is invalid.",
+      "channel": "The **log channel** has not been configured or is invalid."
+    },
+    "mod": {
+      "mutedRole": "The **muted role** has not been configured.",
+      "mutedRoleInvalid": "The **muted role** has not been configured or is invalid."
+    },
+    "counter": {
+      "channel": "The **counter channel** has not been configured.",
+      "channelGone": "The configured **counter channel** no longer exists."
+    },
+    "tickets": {
+      "panelChannel": "The **panel channel** has not been configured.",
+      "panelChannelInvalid": "The **panel channel** does not exist or is inaccessible.",
+      "categoryInvalid": "The configured **ticket category** does not exist.",
+      "supporterRoles": "At least one **supporter role** must be configured."
+    }
+  }
+}

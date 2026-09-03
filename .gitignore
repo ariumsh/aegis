@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# TypeScript compilation
+dist/
+*.tsbuildinfo
+
+# Config & Secrets
+# Catch-all: .env.prod (referenced by docker-compose.prod.yml) was not covered
+# by the previous explicit list, so a real production token could have been
+# committed by accident. Everything is ignored except the checked-in template.
+.env
+.env.*
+!.env.example
+
+# Lockfiles (project uses pnpm — ignore alternatives)
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+npm-debug.log*
+
+# System & Editors
+.DS_Store
+.vscode/
+.idea/
+
+# Generated
+/src/generated/prisma
+coverage/
+
+# Local assistant / agent instruction files.
+#
+# Working notes for whatever editor or tooling a developer happens to use. They
+# are personal to a checkout and must never reach a published branch. At least
+# one of these conventionally records deployment details, so keeping the whole
+# class untracked is a security measure rather than tidiness.
+AGENTS.md
+agents.md
+CLAUDE.md
+claude.md
+GEMINI.md
+gemini.md
+.cursorrules
+.cursor/
+.aider*
+.windsurfrules
+/.claude
+/.gemini

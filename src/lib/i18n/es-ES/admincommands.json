@@ -1,0 +1,28 @@
+{
+  "command": {
+    "botCommander": {
+      "description": "Designa roles o miembros como Bot Commanders",
+      "subcommands": {
+        "allow": "Otorga el rol de Bot Commander a un rol o miembro",
+        "remove": "Elimina el rol de Bot Commander de un rol o miembro"
+      },
+      "options": {
+        "role": "Rol a seleccionar",
+        "member": "Miembro a seleccionar"
+      }
+    }
+  },
+  "botCommander": {
+    "allow": {
+      "success": "{{name}} ahora es Bot Commander."
+    },
+    "remove": {
+      "success": "Se removio el Bot Commander de {{name}}.",
+      "notFound": "{{name}} no es Bot Commander."
+    },
+    "errors": {
+      "noTarget": "Debes especificar un rol o un miembro.",
+      "bothTargets": "Especifica solo un rol o un miembro, no ambos."
+    }
+  }
+}

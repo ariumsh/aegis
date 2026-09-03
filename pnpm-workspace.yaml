@@ -1,0 +1,6 @@
+# Native and postinstall builds pnpm is allowed to run.
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  msgpackr-extract: true
+  prisma: true

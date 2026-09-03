@@ -1,0 +1,21 @@
+{
+  "unexpected": "{{error}} An error occurred.",
+  "argsMissing": "Too few arguments given.",
+  "argsInvalid": "Invalid argument provided.",
+  "usagePrefix": "Usage:",
+  "memberNotFound": "{{cross}} Member not found.",
+  "modConfigMissing": "{{cross}} Mod module is not configured.",
+  "slowmode_usage": "{{cross}} Usage: `{{prefix}}slowmode <time> [#channel]`",
+  "slowmode_invalidTime": "{{cross}} Invalid time format. Use: `5s`, `1m`, `1h` or `0`.",
+  "mod_moduleDisabled": "{{cross}} The **Moderation** module is currently disabled.",
+  "mod_logChannelNotFound": "{{cross}} The configured log channel was not found.\nUse `/module setup` to configure it.",
+  "mod_noMutedRole": "{{cross}} No muted role has been configured.\nUse `/module setup` to configure it.",
+  "mod_mutedRoleNotFound": "{{cross}} The configured muted role was not found.\nUse `/module setup` to configure it.",
+  "mod_notManageable": "{{cross}} I cannot moderate this member. My highest role might be below theirs.",
+  "mod_hierarchy": "{{cross}} You cannot moderate this member because they have a higher or equal role than you.",
+  "mod_invalidDuration": "{{cross}} Invalid duration. Use: `1d`, `2h`, `30m`, or combined like `1d2h30m`.",
+  "mod_self": "{{cross}} You cannot moderate yourself.",
+  "mod_bot": "{{cross}} You cannot moderate a bot.",
+  "mod_noLogChannel": "{{cross}} The **Moderation** module requires a configured log channel.",
+  "guildOnly": "{{cross}} This command can only be used in a server."
+}

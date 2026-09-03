@@ -1,0 +1,301 @@
+{
+  "command": {
+    "ban": {
+      "description": "Ban a member",
+      "options": {
+        "user": "Member to ban",
+        "reason": "Reason",
+        "deleteDays": "Days of messages to delete (0-7)"
+      }
+    },
+    "kick": {
+      "description": "Kick a member",
+      "options": {
+        "user": "Member to kick",
+        "reason": "Reason"
+      }
+    },
+    "mute": {
+      "description": "Mute a member",
+      "options": {
+        "user": "Member to mute",
+        "duration": "Duration (e.g. 30m, 2h, 1d, 1d2h30m)",
+        "reason": "Reason"
+      }
+    },
+    "unmute": {
+      "description": "Unmute a member",
+      "options": {
+        "user": "Member to unmute"
+      }
+    },
+    "timeout": {
+      "description": "Timeout a member",
+      "options": {
+        "user": "Member to timeout",
+        "duration": "Duration (e.g. 10m, 1h) - Max 28 days",
+        "reason": "Reason"
+      }
+    },
+    "untimeout": {
+      "description": "Remove timeout from a member",
+      "options": {
+        "user": "Member to remove timeout from"
+      }
+    },
+    "warn": {
+      "description": "Warn a member",
+      "options": {
+        "user": "Member to warn",
+        "reason": "Reason"
+      }
+    },
+    "softban": {
+      "description": "Soft-ban a member",
+      "options": {
+        "user": "Member to softban",
+        "reason": "Reason",
+        "deleteDays": "Days of messages to delete (0-7, default 3)"
+      }
+    },
+    "tempban": {
+      "description": "Temporarily ban a member",
+      "options": {
+        "user": "Member to ban",
+        "duration": "Duration (e.g. 1d, 2h, 30m)",
+        "reason": "Reason"
+      }
+    },
+    "unban": {
+      "description": "Unban a user",
+      "options": {
+        "userId": "ID of the user to unban",
+        "reason": "Reason"
+      }
+    },
+    "case": {
+      "description": "View moderation case details",
+      "options": {
+        "number": "Case number"
+      }
+    },
+    "removeCase": {
+      "description": "Remove a moderation case",
+      "options": {
+        "caseNumber": "Case number to remove",
+        "reason": "Reason for removal"
+      }
+    },
+    "lockdown": {
+      "description": "Lock/Unlock a channel",
+      "options": {
+        "channel": "Channel to lockdown (optional)"
+      }
+    },
+    "slowmode": {
+      "description": "Set slowmode for a channel",
+      "options": {
+        "duration": "Slowmode duration (e.g. 5s, 1m, 0/off)",
+        "channel": "Channel to set slowmode (optional)"
+      }
+    },
+    "silentban": {
+      "description": "Manage silent bans",
+      "subcommands": {
+        "add": "Apply a silent ban to a user",
+        "remove": "Remove a silent ban",
+        "list": "List all active silent bans"
+      },
+      "options": {
+        "user": "The user to silent ban",
+        "duration": "Ban duration",
+        "reason": "Reason for the silent ban",
+        "removeUser": "The user to unban"
+      }
+    },
+    "threshold": {
+      "description": "Manage moderation thresholds",
+      "subcommands": {
+        "add": "Add or update a threshold rule",
+        "list": "List threshold rules",
+        "remove": "Remove a threshold rule"
+      },
+      "options": {
+        "trigger": "Action counter used as trigger",
+        "count": "Trigger count",
+        "action": "Action to apply",
+        "duration": "Duration for mute/timeout/tempban (e.g. 30m, 2h, 1d)",
+        "listTrigger": "Optional trigger filter",
+        "id": "Rule ID"
+      }
+    },
+    "perms": {
+      "description": "Manage Aegis mod permission overrides",
+      "subcommands": {
+        "allow": "Grant a role or user permission to use a mod action",
+        "deny": "Explicitly block a role or user from using a mod action",
+        "reset": "Remove a permission override",
+        "list": "View all permission overrides for a role or user"
+      },
+      "options": {
+        "role": "Target role",
+        "user": "Target user",
+        "action": "The mod action"
+      }
+    }
+  },
+  "sanctions": {
+    "types": {
+      "ban": "User Banned",
+      "tempban": "User Temp-banned",
+      "unban": "User Unbanned",
+      "kick": "User Kicked",
+      "mute": "User Muted",
+      "unmute": "User Unmuted",
+      "timeout": "User Timed Out",
+      "untimeout": "User Timeout Removed",
+      "softban": "User Soft-banned",
+      "warn": "User Warned",
+      "slowmode": "Slowmode Updated",
+      "lockdown": "Channel Lockdown"
+    },
+    "confirmations": {
+      "ban": "{{user}} has been **banned**.",
+      "tempban": "{{user}} has been **temp-banned**.",
+      "kick": "{{user}} has been **kicked**.",
+      "mute": "{{user}} has been **muted**.",
+      "timeout": "{{user}} has been **timed out**.",
+      "softban": "{{user}} has been **soft-banned**.",
+      "warn": "{{user}} has been **warned**.",
+      "unban": "{{user}} has been **unbanned**.",
+      "unmute": "{{user}} has been **unmuted**.",
+      "untimeout": "Timeout removed for {{user}}.",
+      "slowmode": "Slowmode set to **{{time}}**.",
+      "slowmode_remote": "Slowmode set to **{{time}}** in {{channel}}.",
+      "slowmode_disabled": "Slowmode has been **disabled**.",
+      "slowmode_disabled_remote": "Slowmode has been **disabled** in {{channel}}.",
+      "lockdown": "This channel has been **locked**.",
+      "unlockdown": "This channel has been **unlocked**.",
+      "lockdown_remote": "{{channel}} has been **locked**.",
+      "unlockdown_remote": "{{channel}} has been **unlocked**.",
+      "slowmode_cap": "The maximum slowmode limit is **6 hours**."
+    },
+    "fields": {
+      "target": "Target",
+      "staff": "Action by",
+      "reason": "Reason",
+      "duration": "Duration",
+      "date": "Date",
+      "permanent": "Permanent"
+    }
+  },
+  "mod": {
+    "usage": {
+      "ban": "ban <user> [reason] [days]",
+      "kick": "kick <user> [reason]",
+      "mute": "mute <user> [duration] [reason]",
+      "unmute": "unmute <user> [reason]",
+      "warn": "warn <user> [reason]",
+      "softban": "softban <user> [reason]",
+      "timeout": "timeout <user> <duration> [reason]",
+      "untimeout": "untimeout <user>",
+      "tempban": "tempban <user> <duration> [reason]",
+      "unban": "unban <user_id> [reason]",
+      "slowmode": "slowmode <time> [channel]",
+      "case": "case <number>",
+      "removeCase": "remove-case <number>"
+    },
+    "ban": {
+      "notBanned": "This user is not banned.",
+      "notBannable": "I cannot ban this user (they might have higher roles than me).",
+      "softbanAuditReason": "Soft-ban (Ban + Unban to delete messages)",
+      "invalidUserId": "Please provide a valid user ID."
+    },
+    "kick": {
+      "notKickable": "I cannot kick this user."
+    },
+    "mute": {
+      "notMuted": "This user is not muted.",
+      "alreadyMuted": "This user already has an active mute.",
+      "hasTimeoutProceedWithForce": "This user already has an active timeout. Remove the timeout first before applying a mute.",
+      "auditReason": "Mute removed by command",
+      "permanent": "Permanent"
+    },
+    "unmute": {
+      "roleMissing": "Muted role is not configured."
+    },
+    "timeout": {
+      "tooLong": "Timeout cannot be longer than 28 days.",
+      "alreadyTimedOut": "This user already has an active timeout.",
+      "notTimedOut": "This user does not have an active timeout.",
+      "auditReason": "Timeout removed by command",
+      "hasMuteProceedWithForce": "This user already has an active mute. Remove the mute first before applying a timeout."
+    },
+    "case": {
+      "notFound": "Case #{{case}} not found.",
+      "invalidNumber": "Please provide a valid case number.",
+      "removed": "Case #{{case}} has been removed.",
+      "title": "Case #{{case}}",
+      "noReason": "No reason provided",
+      "fields": {
+        "action": "Action"
+      }
+    },
+    "silentban": {
+      "self": "You cannot silent-ban yourself.",
+      "bot": "You cannot silent-ban a bot.",
+      "noBans": "There are no active silent-bans.",
+      "never": "Never"
+    },
+    "threshold": {
+      "errors": {
+        "thresholdsDisabled": "Automated thresholds are disabled in this server.",
+        "subcommandRequired": "Please provide a subcommand: add, list, or remove.",
+        "unknownSubcommand": "Unknown subcommand: {{subcommand}}.",
+        "invalidTrigger": "Invalid trigger type: {{trigger}}.",
+        "invalidAction": "Invalid action type: {{action}}.",
+        "invalidCount": "Threshold count must be at least 1.",
+        "invalidId": "Please provide a valid threshold rule ID.",
+        "durationRequired": "Action {{action}} requires a duration.",
+        "durationNotAllowed": "Action {{action}} does not support a duration.",
+        "notFound": "Threshold rule #{{id}} was not found in this server."
+      },
+      "autoReason": "Automated action ({{count}} sanctions)",
+      "added": "Threshold #{{id}} saved: trigger={{trigger}}, count={{count}}, action={{action}}, duration={{duration}}.",
+      "removed": "Threshold rule #{{id}} has been removed.",
+      "list": {
+        "title": "Threshold Rules",
+        "empty": "No threshold rules found.",
+        "expirationEnabled": "Warn expiration window: {{days}} day(s)",
+        "expirationDisabled": "Warn expiration window: disabled",
+        "line": "#{{id}} | {{trigger}} x{{count}} -> {{action}} | duration: {{duration}}"
+      }
+    }
+  },
+  "perms": {
+    "allow": {
+      "success": "{{name}} can now use `{{action}}`.",
+      "successAll": "{{name}} has been granted access to all mod actions."
+    },
+    "deny": {
+      "success": "{{name}} is now explicitly denied from using `{{action}}`.",
+      "successAll": "{{name}} has been explicitly denied from all mod actions."
+    },
+    "reset": {
+      "success": "Removed permission override for {{name}} on `{{action}}`.",
+      "notFound": "No permission override found for {{name}} on `{{action}}`.",
+      "successAll": "Removed all {{count}} permission override(s) for {{name}}.",
+      "notFoundAll": "No permission overrides found for {{name}}."
+    },
+    "list": {
+      "empty": "No permission overrides found for {{name}}.",
+      "title": "Permission overrides for {{name}}:"
+    },
+    "errors": {
+      "noTarget": "You must specify either a role or a user.",
+      "bothTargets": "Specify either a role or a user, not both.",
+      "denied": "You have been explicitly denied permission to use this command.",
+      "noPermission": "You don't have permission to use this command."
+    }
+  }
+}
