@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, Guild, GuildMember, Message } from 'discord.js';
+import { Guild, GuildMember, Message } from 'discord.js';
 import { requireModConfig, validateMod, sendModDM, parseDuration, checkThresholds } from '../../../lib/utils/ModUtils';
 import { prisma } from '../../../database/db';
 import { Emojis } from '../../../lib/constants/emojis';

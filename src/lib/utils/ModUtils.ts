@@ -301,11 +301,12 @@ export async function checkThresholds(data: {
 
         switch (activeRule.action) {
             case 'mute':
-            case 'timeout':
+            case 'timeout': {
                 if (!member?.manageable) return;
                 const duration = activeRule.duration ? parseDuration(activeRule.duration) : null;
                 await applyMute({ ...data, reason, duration: duration?.formatted, expiresAt: duration?.expiresAt, isAutomatic: true });
                 break;
+            }
             case 'kick':
                 if (!member?.kickable) return;
                 await sendModDM({ userId: data.userId, moderatorId: container.client.user!.id, action: 'kick', guild: data.guild, reason });
@@ -319,7 +320,7 @@ export async function checkThresholds(data: {
                 await data.guild.members.unban(data.userId, 'Softban: clear messages');
                 await sendModLog({ ...data, action: 'softban', reason, isAutomatic: true });
                 break;
-            case 'tempban':
+            case 'tempban': {
                 if (!member?.bannable) return;
                 const banDuration = activeRule.duration ? parseDuration(activeRule.duration) : null;
                 if (!banDuration) return;
@@ -332,6 +333,7 @@ export async function checkThresholds(data: {
                 });
                 await member.ban({ reason });
                 break;
+            }
             case 'ban':
                 if (!member?.bannable) return;
                 await sendModDM({ userId: data.userId, moderatorId: container.client.user!.id, action: 'ban', guild: data.guild, reason });

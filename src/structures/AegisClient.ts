@@ -6,7 +6,7 @@ import {
     container,
     LogLevel
 } from '@sapphire/framework';
-import { ActivityType, GatewayIntentBits, Message } from 'discord.js';
+import { GatewayIntentBits, Message } from 'discord.js';
 import pino from 'pino';
 import { join } from 'path';
 import { CacheManager } from '../database/CacheManager';

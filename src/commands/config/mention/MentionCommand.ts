@@ -2,7 +2,7 @@ import { Command } from '@sapphire/framework';
 import { PermissionFlagsBits } from 'discord.js';
 import modulesEnUs from '../../../lib/i18n/en-US/modules.json';
 import modulesEsEs from '../../../lib/i18n/es-ES/modules.json';
-import { mentionOptionName, mentionMaxLength, mentionOptionDescription, setMentionResponse } from '../../../command-helpers/config/mention/core';
+import { mentionOptionName, mentionMaxLength, setMentionResponse } from '../../../command-helpers/config/mention/core';
 
 const mentionCommandLocales = {
     en: modulesEnUs.config.mention.command,

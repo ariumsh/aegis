@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, GuildMember, Message } from 'discord.js';
+import { GuildMember, Message } from 'discord.js';
 import { requireModConfig, validateMod, sendModDM } from '../../../lib/utils/ModUtils';
 import { Emojis } from '../../../lib/constants/emojis';
 import { AegisUserError } from '../../../lib/structures/Errors';

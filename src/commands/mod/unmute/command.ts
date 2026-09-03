@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, Guild, GuildMember, Message } from 'discord.js';
+import { Guild, GuildMember, Message } from 'discord.js';
 import { resolveKey } from '@sapphire/plugin-i18next';
 import { requireModConfig, validateMod } from '../../../lib/utils/ModUtils';
 import { prisma } from '../../../database/db';

@@ -1,5 +1,5 @@
 import { Listener, Events } from '@sapphire/framework';
-import type { MessageCommandDeniedPayload, MessageCommandErrorPayload, MessageCommandSuccessPayload } from '@sapphire/framework';
+import type { MessageCommandDeniedPayload, MessageCommandErrorPayload } from '@sapphire/framework';
 
 export class CommandDebugListener extends Listener {
     public constructor(context: Listener.LoaderContext, options: Listener.Options) {

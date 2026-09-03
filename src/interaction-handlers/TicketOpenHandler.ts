@@ -1,6 +1,5 @@
 import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework';
 import { ChannelType, StringSelectMenuInteraction } from 'discord.js';
-import { prisma } from '../database/db';
 import { getTicketConfig, createTicketWithNumber, buildChannelPermissions, logTicketEvent } from '../lib/utils/ticketUtils';
 import { getTicketWelcomeLayout } from '../lib/layouts/ticketLayouts';
 

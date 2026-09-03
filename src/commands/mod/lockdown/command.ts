@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { PermissionFlagsBits, GuildMember, Message, TextChannel, NewsChannel } from 'discord.js';
+import { PermissionFlagsBits, Message, TextChannel, NewsChannel } from 'discord.js';
 import { resolveKey } from '@sapphire/plugin-i18next';
 import { requireModConfig } from '../../../lib/utils/ModUtils';
 import { Emojis } from '../../../lib/constants/emojis';
@@ -29,7 +29,7 @@ export class LockdownCommand extends Command {
         const isLocked = targetChannel.permissionOverwrites.cache.get(guildId)?.deny.has(PermissionFlagsBits.SendMessages);
         const isRemote = targetChannel.id !== currentChannelId;
 
-        let content = '';
+        let content: string;
         let remoteContent = '';
 
         if (isLocked) {
