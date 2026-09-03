@@ -2,6 +2,8 @@ import { InteractionHandler, InteractionHandlerTypes } from '@sapphire/framework
 import { ChannelType, StringSelectMenuInteraction } from 'discord.js';
 import { getTicketConfig, createTicketWithNumber, buildChannelPermissions, logTicketEvent } from '../lib/utils/ticketUtils';
 import { getTicketWelcomeLayout } from '../lib/layouts/ticketLayouts';
+import { resolveKey } from '@sapphire/plugin-i18next';
+import { Emojis } from '../lib/constants/emojis';
 
 
 // Handles the category select menu on the panel message ──────────────────
@@ -26,7 +28,7 @@ export class TicketOpenHandler extends InteractionHandler {
 
         const config = await getTicketConfig(guild.id);
         if (!config.module) {
-            return interaction.editReply('The tickets module is not enabled.');
+            return interaction.editReply(await resolveKey(interaction, 'modules:tickets.moduleDisabled', { cross: Emojis.cross_emoji }));
         }
 
         // Atomic lock: SET NX prevents race conditions from double-clicking
@@ -34,7 +36,7 @@ export class TicketOpenHandler extends InteractionHandler {
         const lockKey = `tickets:open:${guild.id}:${user.id}`;
         const placeholderSet = await redis.set(lockKey, 'pending', 'EX', 30, 'NX');
         if (!placeholderSet) {
-            return interaction.editReply('You already have an open ticket!');
+            return interaction.editReply(await resolveKey(interaction, 'modules:tickets.alreadyOpen', { cross: Emojis.cross_emoji }));
         }
 
         // Created outside the try so the failure handler below can still see it
@@ -79,14 +81,14 @@ export class TicketOpenHandler extends InteractionHandler {
 
             await logTicketEvent('opened', ticket, user.id, guild, config);
 
-            return interaction.editReply(`Ticket opened! Head over to <#${channel.id}>`);
+            return interaction.editReply(await resolveKey(interaction, 'modules:tickets.opened', { check: Emojis.check_emoji, channel: `<#${channel.id}>` }));
         } catch (err) {
             // Release the lock so the user can retry, and take the channel with
             // it: leaving it behind gives them a ticket channel with no ticket.
             await redis.del(lockKey);
             if (channel) await channel.delete('Ticket creation failed').catch(() => null);
             this.container.logger.error('[TICKET_OPEN] Error creating ticket:', err);
-            return interaction.editReply('Failed to open ticket. Please try again.');
+            return interaction.editReply(await resolveKey(interaction, 'modules:tickets.openFailed', { cross: Emojis.cross_emoji }));
         }
     }
 }

@@ -175,5 +175,59 @@
   "prefix": {
     "invalid": "{{cross}} El prefijo debe tener entre 1 y 5 caracteres y no puede contener espacios.",
     "success": "{{check}} El prefijo ha sido actualizado a: `{{prefix}}`"
+  },
+  "tickets": {
+    "notFound": "{{cross}} Ticket no encontrado.",
+    "moduleDisabled": "{{cross}} El módulo de tickets no está activado.",
+    "alreadyOpen": "{{cross}} Ya tienes un ticket abierto.",
+    "openFailed": "{{cross}} No se pudo abrir el ticket. Inténtalo de nuevo.",
+    "opened": "{{check}} Ticket abierto. Ve a {{channel}}",
+    "closeDenied": "{{cross}} Solo el personal de soporte o el autor pueden cerrar este ticket.",
+    "alreadyClosed": "{{cross}} Este ticket ya está cerrado.",
+    "claimDenied": "{{cross}} Solo el personal de soporte puede reclamar tickets.",
+    "alreadyClaimed": "{{cross}} Este ticket ya fue reclamado por {{user}}.",
+    "claimed": "{{check}} Has reclamado el ticket #{{number}}.",
+    "remindNotClaimer": "{{cross}} Solo quien reclamó este ticket puede enviar un recordatorio.",
+    "remindUnclaimed": "{{cross}} Hay que reclamar el ticket antes de enviar un recordatorio.",
+    "remindCooldown": "{{cross}} Ya se envió un recordatorio hace poco. Espera 30 segundos.",
+    "remindSent": "{{check}} Recordatorio enviado. El ticket se cerrará solo en 20 minutos si no hay respuesta.",
+    "reopenDenied": "{{cross}} Solo el personal de soporte puede reabrir tickets.",
+    "deleteDenied": "{{cross}} Solo el personal de soporte puede eliminar tickets.",
+    "deleteNotClosed": "{{cross}} Cierra el ticket antes de eliminarlo.",
+    "log": {
+      "opened": "abierto",
+      "closed": "cerrado",
+      "claimed": "reclamado",
+      "reopened": "reabierto",
+      "deleted": "eliminado",
+      "auto_closed": "cerrado automáticamente",
+      "system": "Sistema",
+      "entry": "**Ticket #{{number}}** {{event}} | Usuario: {{user}} | Por: {{actor}}"
+    },
+    "transcript": {
+      "channel": "Transcripción — **Ticket #{{number}}** | {{user}}",
+      "dm": "Aquí tienes la transcripción de tu ticket **#{{number}}** en **{{guild}}**:"
+    }
+  },
+  "validation": {
+    "vanity": {
+      "keyword": "No se ha configurado la **palabra clave** (texto del estado).",
+      "role": "El **rol de recompensa** no está configurado o no es válido.",
+      "channel": "El **canal de registro** no está configurado o no es válido."
+    },
+    "mod": {
+      "mutedRole": "No se ha configurado el **rol de silenciamiento**.",
+      "mutedRoleInvalid": "El **rol de silenciamiento** no está configurado o no es válido."
+    },
+    "counter": {
+      "channel": "No se ha configurado el **canal del contador**.",
+      "channelGone": "El **canal del contador** configurado ya no existe."
+    },
+    "tickets": {
+      "panelChannel": "No se ha configurado el **canal del panel**.",
+      "panelChannelInvalid": "El **canal del panel** no existe o no es accesible.",
+      "categoryInvalid": "La **categoría de tickets** configurada no existe.",
+      "supporterRoles": "Hay que configurar al menos un **rol de soporte**."
+    }
   }
 }

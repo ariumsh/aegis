@@ -1,4 +1,9 @@
 // Types ──────────────────
+//
+// `missing` carries i18n keys rather than prose. The validator has no access to
+// the invoking interaction, so it cannot resolve a locale itself; whoever
+// renders the result does. Returning English sentences from here meant a Spanish
+// guild was told what was missing in English.
 
 export interface ValidationResult {
     isValid:       boolean;
@@ -17,21 +22,21 @@ export const ModuleValidators: Record<string, (config: any, guild: any) => Promi
         const errors: string[] = [];
 
         if (!config.vanityString) {
-            errors.push('The **keyword** (status text) has not been configured.');
+            errors.push('modules:validation.vanity.keyword');
         }
 
         const role = config.vanityRoleId
             ? await guild.roles.fetch(config.vanityRoleId).catch(() => null)
             : null;
         if (!role) {
-            errors.push('The **reward role** has not been configured or is invalid.');
+            errors.push('modules:validation.vanity.role');
         }
 
         const channel = config.vanityChannelId
             ? await guild.channels.fetch(config.vanityChannelId).catch(() => null)
             : null;
         if (!channel) {
-            errors.push('The **log channel** has not been configured or is invalid.');
+            errors.push('modules:validation.vanity.channel');
         }
 
         return { isValid: errors.length === 0, missing: errors };
@@ -45,10 +50,10 @@ export const ModuleValidators: Record<string, (config: any, guild: any) => Promi
         const channel = await guild.channels.fetch(config.modLogChannelId).catch(() => null);
         if (!channel) return { isValid: false, needsChannel: true };
 
-        if (!config.mutedRoleId) return { isValid: false, missing: ['The **muted role** has not been configured.'] };
+        if (!config.mutedRoleId) return { isValid: false, missing: ['modules:validation.mod.mutedRole'] };
 
         const role = await guild.roles.fetch(config.mutedRoleId).catch(() => null);
-        if (!role) return { isValid: false, missing: ['The **muted role** has not been configured or is invalid.'] };
+        if (!role) return { isValid: false, missing: ['modules:validation.mod.mutedRoleInvalid'] };
 
         return { isValid: true };
     },
@@ -57,12 +62,12 @@ export const ModuleValidators: Record<string, (config: any, guild: any) => Promi
 
     counter: async (config, guild) => {
         if (!config.counterChannelId) {
-            return { isValid: false, missing: ['The **counter channel** has not been configured.'] };
+            return { isValid: false, missing: ['modules:validation.counter.channel'] };
         }
 
         const channel = await guild.channels.fetch(config.counterChannelId).catch(() => null);
         if (!channel) {
-            return { isValid: false, missing: ['The configured **counter channel** no longer exists.'] };
+            return { isValid: false, missing: ['modules:validation.counter.channelGone'] };
         }
 
         return { isValid: true };
@@ -74,19 +79,19 @@ export const ModuleValidators: Record<string, (config: any, guild: any) => Promi
         const errors: string[] = [];
 
         if (!config.ticketsPanelChannelId) {
-            errors.push('The **panel channel** has not been configured.');
+            errors.push('modules:validation.tickets.panelChannel');
         } else {
             const panelCh = await guild.channels.fetch(config.ticketsPanelChannelId).catch(() => null);
-            if (!panelCh) errors.push('The **panel channel** does not exist or is inaccessible.');
+            if (!panelCh) errors.push('modules:validation.tickets.panelChannelInvalid');
         }
 
         if (config.ticketsCategoryId) {
             const cat = await guild.channels.fetch(config.ticketsCategoryId).catch(() => null);
-            if (!cat) errors.push('The configured **ticket category** does not exist.');
+            if (!cat) errors.push('modules:validation.tickets.categoryInvalid');
         }
 
         if (!config.ticketsSupporterRoleIds || config.ticketsSupporterRoleIds.length === 0) {
-            errors.push('At least one **supporter role** must be configured.');
+            errors.push('modules:validation.tickets.supporterRoles');
         }
 
         return { isValid: errors.length === 0, missing: errors };

@@ -4,6 +4,8 @@ import { prisma } from '../database/db';
 import { getTicketConfig, logTicketEvent, closeTicket } from '../lib/utils/ticketUtils';
 import { getTicketWelcomeLayout, getReminderCountdownLayout } from '../lib/layouts/ticketLayouts';
 import { scheduleAutoClose } from '../lib/utils/ticketQueue';
+import { resolveKey } from '@sapphire/plugin-i18next';
+import { Emojis } from '../lib/constants/emojis';
 
 
 // Handles all ticket action buttons: close, claim, remind, reopen, delete ──────────────────
@@ -20,6 +22,12 @@ export class TicketActionHandler extends InteractionHandler {
         return this.some();
     }
 
+    /** Ephemeral refusal, translated. */
+    private async deny(interaction: ButtonInteraction, key: string, vars: Record<string, unknown> = {}) {
+        const content = await resolveKey(interaction, key, { cross: Emojis.cross_emoji, check: Emojis.check_emoji, ...vars });
+        return interaction.reply({ content, ephemeral: true } as any);
+    }
+
     public async run(interaction: ButtonInteraction) {
         const { guild, user, customId } = interaction;
         const channel = interaction.channel as TextChannel | null;
@@ -27,7 +35,7 @@ export class TicketActionHandler extends InteractionHandler {
 
         const ticket = await prisma.ticket.findUnique({ where: { channelId: channel.id } });
         if (!ticket) {
-            return interaction.reply({ content: 'Ticket not found.', ephemeral: true } as any);
+            return this.deny(interaction, 'modules:tickets.notFound');
         }
 
         const config = await getTicketConfig(guild.id);
@@ -42,10 +50,10 @@ export class TicketActionHandler extends InteractionHandler {
 
             case 'ticket_close': {
                 if (!isSupporterRole && ticket.userId !== user.id) {
-                    return interaction.reply({ content: 'Only supporters or the ticket owner can close this ticket.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.closeDenied');
                 }
                 if (ticket.status !== 'open') {
-                    return interaction.reply({ content: 'This ticket is already closed.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.alreadyClosed');
                 }
                 await interaction.deferUpdate();
                 await closeTicket(ticket, guild, config, user.id, 'manual');
@@ -56,10 +64,10 @@ export class TicketActionHandler extends InteractionHandler {
 
             case 'ticket_claim': {
                 if (!isSupporterRole) {
-                    return interaction.reply({ content: 'Only supporters can claim tickets.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.claimDenied');
                 }
                 if (ticket.claimedById) {
-                    return interaction.reply({ content: `This ticket is already claimed by <@${ticket.claimedById}>.`, ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.alreadyClaimed', { user: `<@${ticket.claimedById}>` });
                 }
                 await interaction.deferUpdate();
                 const claimedTicket = await prisma.ticket.update({
@@ -75,7 +83,10 @@ export class TicketActionHandler extends InteractionHandler {
                 );
 
                 await logTicketEvent('claimed', claimedTicket, user.id, guild, config);
-                await interaction.followUp({ content: `You claimed ticket #${ticket.ticketNumber}.`, ephemeral: true } as any);
+                await interaction.followUp({
+                    content: await resolveKey(interaction, 'modules:tickets.claimed', { check: Emojis.check_emoji, number: ticket.ticketNumber }),
+                    ephemeral: true
+                } as any);
                 break;
             }
 
@@ -83,17 +94,17 @@ export class TicketActionHandler extends InteractionHandler {
 
             case 'ticket_remind': {
                 if (ticket.claimedById !== user.id) {
-                    const msg = ticket.claimedById
-                        ? 'Only the staff member who claimed this ticket can send a reminder.'
-                        : 'This ticket must be claimed before a reminder can be sent.';
-                    return interaction.reply({ content: msg, ephemeral: true } as any);
+                    return this.deny(
+                        interaction,
+                        ticket.claimedById ? 'modules:tickets.remindNotClaimer' : 'modules:tickets.remindUnclaimed'
+                    );
                 }
 
                 // Anti-spam lock: one reminder per 30 seconds
                 const lockKey = `tickets:remind_lock:${ticket.id}`;
                 const locked = await this.container.redis.set(lockKey, '1', 'EX', 30, 'NX');
                 if (!locked) {
-                    return interaction.reply({ content: 'A reminder was already sent recently. Wait 30 seconds.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.remindCooldown');
                 }
 
                 await interaction.deferUpdate();
@@ -107,7 +118,10 @@ export class TicketActionHandler extends InteractionHandler {
                 await prisma.ticket.update({ where: { id: ticket.id }, data: { autoCloseJobId: jobId } });
                 await this.container.redis.set(`tickets:autoclose_job:${guild.id}:${ticket.id}`, jobId, 'EX', 1300);
 
-                await interaction.followUp({ content: 'Reminder sent. Ticket will auto-close in 20 minutes if there is no response.', ephemeral: true } as any);
+                await interaction.followUp({
+                    content: await resolveKey(interaction, 'modules:tickets.remindSent', { check: Emojis.check_emoji }),
+                    ephemeral: true
+                } as any);
                 break;
             }
 
@@ -115,7 +129,7 @@ export class TicketActionHandler extends InteractionHandler {
 
             case 'ticket_reopen': {
                 if (!isSupporterRole) {
-                    return interaction.reply({ content: 'Only supporters can reopen tickets.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.reopenDenied');
                 }
                 await interaction.deferUpdate();
                 await prisma.ticket.update({
@@ -154,10 +168,10 @@ export class TicketActionHandler extends InteractionHandler {
 
             case 'ticket_delete': {
                 if (!isSupporterRole) {
-                    return interaction.reply({ content: 'Only supporters can delete tickets.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.deleteDenied');
                 }
                 if (ticket.status !== 'closed') {
-                    return interaction.reply({ content: 'Close the ticket before deleting it.', ephemeral: true } as any);
+                    return this.deny(interaction, 'modules:tickets.deleteNotClosed');
                 }
                 await interaction.deferUpdate();
                 await prisma.ticket.update({ where: { id: ticket.id }, data: { status: 'deleted' } });
