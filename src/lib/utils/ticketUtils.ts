@@ -1,6 +1,7 @@
 import { Guild, TextChannel, PermissionFlagsBits, AttachmentBuilder } from 'discord.js';
 import { container } from '@sapphire/framework';
 import { prisma } from '../../database/db';
+import { resolveKey } from '@sapphire/plugin-i18next';
 
 
 // Ticket utilities ──────────────────
@@ -150,9 +151,23 @@ export function safeHref(value: unknown): string {
     }
 }
 
-export async function generateTranscript(channel: TextChannel): Promise<AttachmentBuilder> {
+/**
+ * Upper bound on how much of a channel a transcript will page through.
+ *
+ * The loop below is otherwise unbounded: it walks the entire history in pages of
+ * 100, holding every message in memory. A ticket left open for months, or one
+ * used as a general chat, would spend hundreds of requests and a large heap on a
+ * single close. Twenty thousand messages is far more than a support ticket ever
+ * legitimately holds, and it caps the worst case at 200 requests.
+ */
+const TRANSCRIPT_MESSAGE_LIMIT = 20_000;
+
+/** Renders the transcript document. Returns the HTML rather than a file, so one
+ *  render can be sent to several destinations. */
+export async function buildTranscriptHtml(channel: TextChannel): Promise<string> {
     const allMessages: any[] = [];
     let lastId: string | undefined;
+    let truncated = false;
 
     while (true) {
         const batch = await channel.messages.fetch({ limit: 100, ...(lastId ? { before: lastId } : {}) });
@@ -160,6 +175,10 @@ export async function generateTranscript(channel: TextChannel): Promise<Attachme
         allMessages.push(...batch.values());
         lastId = batch.last()!.id;
         if (batch.size < 100) break;
+        if (allMessages.length >= TRANSCRIPT_MESSAGE_LIMIT) {
+            truncated = true;
+            break;
+        }
     }
     allMessages.reverse(); // chronological order
 
@@ -179,33 +198,49 @@ export async function generateTranscript(channel: TextChannel): Promise<Attachme
 .msg{padding:2px 0}.ts{color:#6c7086}.author{color:#89b4fa;font-weight:bold}.content{color:#cdd6f4}
 a{color:#89dceb}</style></head><body>
 <h2>Transcript: #${safeChannelName}</h2>
+${truncated ? `<div class="msg"><span class="ts">note</span> <span class="content">Older messages were omitted: this channel exceeds the ${TRANSCRIPT_MESSAGE_LIMIT}-message transcript limit.</span></div>` : ''}
 ${rows}
 </body></html>`;
 
+    return html;
+}
+
+/** File form of the transcript, for callers that need a single attachment. */
+export async function generateTranscript(channel: TextChannel): Promise<AttachmentBuilder> {
+    const html = await buildTranscriptHtml(channel);
     return new AttachmentBuilder(Buffer.from(html, 'utf-8'), { name: `transcript-${channel.name}.html` });
 }
 
 
 export async function sendTranscript(ticket: any, guild: Guild, config: TicketConfig, channel: TextChannel): Promise<void> {
-    // Send to transcript channel
-    if (config.transcriptChannelId) {
-        const transcriptCh = guild.channels.cache.get(config.transcriptChannelId) as TextChannel | null;
-        if (transcriptCh) {
-            const attachment = await generateTranscript(channel);
-            await transcriptCh.send({
-                content: `Transcript — **Ticket #${ticket.ticketNumber}** | <@${ticket.userId}>`,
-                files: [attachment]
-            }).catch(() => null);
-        }
+    const transcriptCh = config.transcriptChannelId
+        ? (guild.channels.cache.get(config.transcriptChannelId) as TextChannel | null)
+        : null;
+    const user = await guild.client.users.fetch(ticket.userId).catch(() => null);
+
+    // Nothing to send it to, so nothing to build.
+    if (!transcriptCh && !user) return;
+
+    // Built once. This used to be generated separately for the channel copy and
+    // the DM copy, and generating it walks the channel's entire history in pages
+    // of 100 — so closing a busy ticket paged through every message in it twice,
+    // holding two full copies in memory to produce two identical files.
+    const html = await buildTranscriptHtml(channel);
+    const filename = `transcript-${channel.name}.html`;
+
+    if (transcriptCh) {
+        await transcriptCh.send({
+            content: await resolveKey(guild, 'modules:tickets.transcript.channel', { number: ticket.ticketNumber, user: `<@${ticket.userId}>` }),
+            files: [new AttachmentBuilder(Buffer.from(html, 'utf-8'), { name: filename })]
+        }).catch(() => null);
     }
 
-    // Send DM to user
-    const user = await guild.client.users.fetch(ticket.userId).catch(() => null);
     if (user) {
-        const dmAttachment = await generateTranscript(channel);
+        // Discord consumes the buffer on send, so the DM needs its own
+        // AttachmentBuilder around the same already-rendered string.
         await user.send({
-            content: `Here's your ticket transcript for **#${ticket.ticketNumber}** in **${guild.name}**:`,
-            files: [dmAttachment]
+            content: await resolveKey(guild, 'modules:tickets.transcript.dm', { number: ticket.ticketNumber, guild: guild.name }),
+            files: [new AttachmentBuilder(Buffer.from(html, 'utf-8'), { name: filename })]
         }).catch(() => null);
     }
 }
@@ -222,17 +257,19 @@ export async function logTicketEvent(
     const logCh = guild.channels.cache.get(config.logChannelId) as TextChannel | null;
     if (!logCh) return;
 
-    const eventLabels: Record<string, string> = {
-        opened: 'opened',
-        closed: 'closed',
-        claimed: 'claimed',
-        reopened: 'reopened',
-        deleted: 'deleted',
-        auto_closed: 'auto closed'
-    };
-    const actorStr = actorId ? `<@${actorId}>` : 'System';
+    const eventLabel = await resolveKey(guild, `modules:tickets.log.${event}`).catch(() => event);
+    const actorStr = actorId
+        ? `<@${actorId}>`
+        : await resolveKey(guild, 'modules:tickets.log.system').catch(() => 'System');
 
-    await logCh.send(`**Ticket #${ticket.ticketNumber}** ${eventLabels[event]} | User: <@${ticket.userId}> | By: ${actorStr}`).catch(() => null);
+    const line = await resolveKey(guild, 'modules:tickets.log.entry', {
+        number: ticket.ticketNumber,
+        event: eventLabel,
+        user: `<@${ticket.userId}>`,
+        actor: actorStr
+    });
+
+    await logCh.send(line).catch(() => null);
 }
 
 
