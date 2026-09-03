@@ -1,0 +1,20 @@
+{
+  "unexpected": "{{error}} Ha ocurrido un error.",
+  "argsMissing": "Argumentos insuficientes.",
+  "argsInvalid": "Argumento inválido proporcionado.",
+  "usagePrefix": "Uso:",
+  "memberNotFound": "{{cross}} Miembro no encontrado.",
+  "modConfigMissing": "{{cross}} El módulo de moderación no está configurado.",
+  "slowmode_usage": "{{cross}} Uso: `{{prefix}}slowmode <tiempo> [#canal]`",
+  "slowmode_invalidTime": "{{cross}} Formato de tiempo inválido. Usa: `5s`, `1m`, `1h` o `0`.",
+  "mod_moduleDisabled": "{{cross}} El módulo de **Moderación** está actualmente desactivado.",
+  "mod_noLogChannel": "{{cross}} El módulo de **Moderación** requiere un canal de logs configurado.",
+  "mod_logChannelNotFound": "{{cross}} No se ha encontrado el canal de registro de sanciones.\nUsa `/module setup` para configurarlo.",
+  "mod_noMutedRole": "{{cross}} No se ha configurado el rol de silenciamiento.\nUsa `/module setup` para configurarlo.",
+  "mod_mutedRoleNotFound": "{{cross}} No se ha encontrado el rol de silenciamiento.\nUsa `/module setup` para configurarlo.",
+  "mod_notManageable": "{{cross}} No puedo moderar a este miembro. Mi rol más alto está por debajo del suyo.",
+  "mod_hierarchy": "{{cross}} No puedes moderar a este miembro porque tiene un rol superior o igual al tuyo.",
+  "mod_invalidDuration": "{{cross}} Duración inválida. Usa: `1d`, `2h`, `30m` o una combinación como `1d2h30m`.",
+  "mod_self": "{{cross}} No puedes moderarte a ti mismo.",
+  "mod_bot": "{{cross}} No puedes moderar a un bot."
+}
