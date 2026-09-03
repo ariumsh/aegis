@@ -1,0 +1,36 @@
+{
+  "cancelled": "{{cross}} Action cancelled.",
+  "timeout": "{{cross}} Time expired.",
+  "error": "{{error}} An unexpected error occurred.",
+  "success": "{{check}} Operation completed successfully!",
+  "settings": {
+    "title": "{{gear}} {{name}} Settings",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "notSet": "Not Set",
+    "vanity": {
+      "keyword": "Keyword",
+      "role": "Reward Role",
+      "channel": "Log Channel",
+      "usersWithVanity": "Users with Vanity"
+    },
+    "mod": {
+      "logChannel": "Mod Logs",
+      "mutedRole": "Muted Role",
+      "thresholds": "Thresholds",
+      "modeModular": "Modular",
+      "modeAllActions": "All Actions"
+    },
+    "tickets": {
+      "panelChannel": "Panel Channel",
+      "category": "Ticket Category",
+      "transcriptChannel": "Transcript Channel",
+      "logChannel": "Log Channel",
+      "supporterRoles": "Supporter Roles"
+    },
+    "counter": {
+      "channel": "Channel",
+      "message": "Message ID"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "cancelled": "{{cross}} Acción cancelada.",
+  "timeout": "{{cross}} Tiempo agotado.",
+  "error": "{{error}} Ocurrió un error inesperado.",
+  "success": "{{check}} Operación completada con éxito!",
+  "settings": {
+    "title": "{{gear}} Ajustes de {{name}}",
+    "enabled": "Activado",
+    "disabled": "Desactivado",
+    "notSet": "No Configurado",
+    "vanity": {
+      "keyword": "Palabra Clave",
+      "role": "Rol de Recompensa",
+      "channel": "Canal de Logs",
+      "usersWithVanity": "Usuarios con Vanity"
+    },
+    "mod": {
+      "logChannel": "Logs de Mod",
+      "mutedRole": "Rol de Mute",
+      "thresholds": "Reglas de Infracción",
+      "modeModular": "Modular",
+      "modeAllActions": "Todas las Acciones"
+    },
+    "tickets": {
+      "panelChannel": "Canal del Panel",
+      "category": "Categoría de Tickets",
+      "transcriptChannel": "Canal de Transcripciones",
+      "logChannel": "Canal de Logs",
+      "supporterRoles": "Roles de Soporte"
+    },
+    "counter": {
+      "channel": "Canal",
+      "message": "ID del mensaje"
+    }
+  }
+}

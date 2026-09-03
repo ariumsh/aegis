@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# TypeScript compilation
+dist/
+*.tsbuildinfo
+
+# Config & Secrets
+# Catch-all: .env.prod (referenced by docker-compose.prod.yml) was not covered
+# by the previous explicit list, so a real production token could have been
+# committed by accident. Everything is ignored except the checked-in template.
+.env
+.env.*
+!.env.example
+
+# Lockfiles (project uses pnpm — ignore alternatives)
+package-lock.json
+yarn.lock
+
+# Logs
+*.log
+npm-debug.log*
+
+# System & Editors
+.DS_Store
+.vscode/
+.idea/
+
+# Bot — generated
+/src/generated/prisma
+
+# Web — Next.js
+web/.next/
+web/out/
+web/.turbopack/
+web/.source/
+web/pnpm-lock.yaml
+web/next-env.d.ts
+
+# LLM context / agent instruction files.
+# These are local working notes only and must never reach a published branch.
+# CLAUDE.md additionally documents production infrastructure, so keeping it out
+# of the repository is a security requirement, not just a tidiness one.
+AGENTS.md
+agents.md
+CLAUDE.md
+claude.md
+web/CHAT_CONTEXT.md
+/.claude

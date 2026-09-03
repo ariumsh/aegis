@@ -1,0 +1,179 @@
+{
+  "config": {
+    "language": {
+      "command": {
+        "description": "Cambia el idioma del bot."
+      },
+      "optionDescription": "Selecciona el nuevo idioma",
+      "display": {
+        "english": "English",
+        "spanish": "Español"
+      },
+      "invalid": "{{cross}} Idioma no válido. Disponibles: `en`, `es`.",
+      "success": "{{check}} Idioma actualizado a **{{lang}}**."
+    },
+    "prefix": {
+      "command": {
+        "description": "Cambia el prefijo del bot para este servidor"
+      },
+      "optionDescription": "El nuevo prefijo (máx 5 caracteres, sin espacios)",
+      "invalid": "{{cross}} El prefijo debe tener entre 1 y 5 caracteres y no puede contener espacios.",
+      "success": "{{check}} El prefijo ha sido actualizado a: `{{prefix}}`"
+    },
+    "mention": {
+      "command": {
+        "description": "Personaliza el mensaje de respuesta al mencionar al bot"
+      },
+      "optionDescription": "El mensaje a enviar al mencionar al bot (deja vacío para restablecer)",
+      "reset": "{{check}} La respuesta de mención ha sido restablecida al valor predeterminado.",
+      "success": "{{check}} Respuesta de mención actualizada.",
+      "defaultResponse": "¡Hola! Mi prefijo es `{{prefix}}`."
+    }
+  },
+  "module": {
+    "command": {
+      "description": "Administra los módulos del sistema de Aegis",
+      "subcommands": {
+        "setup": "Configura un módulo específico",
+        "settings": "Muestra la configuración detallada",
+        "enable": "Habilita un módulo",
+        "disable": "Deshabilita un módulo",
+        "reset": "Restablece un módulo de fábrica"
+      },
+      "options": {
+        "moduleNameSetup": "Nombre del módulo",
+        "moduleName": "Nombre del módulo"
+      }
+    },
+    "notFound": "{{cross}} Módulo no encontrado.",
+    "alreadyEnabled": "{{cross}} El módulo **{{name}}** ya está habilitado.",
+    "alreadyDisabled": "{{cross}} El módulo **{{name}}** ya está deshabilitado.",
+    "displayNames": {
+      "vanity": "Vanity Tracker",
+      "mod": "Moderación",
+      "tickets": "Tickets",
+      "counter": "Contador de miembros"
+    },
+    "errors": {
+      "validatorNotFound": "`❌` Error interno: validador no encontrado.",
+      "needsLogChannel": "`❌` El módulo **{{name}}** necesita un canal de log antes de ser habilitado. Ejecuta `/module setup` primero.",
+      "cannotEnable": "`❌` El módulo **{{name}}** no puede ser habilitado:",
+      "setupFirst": "Ejecuta `/module setup` primero."
+    },
+    "enabled": "habilitado",
+    "disabled": "deshabilitado",
+    "enableSuccess": "El módulo **{{name}}** ha sido habilitado.",
+    "disableSuccess": "El módulo **{{name}}** ha sido deshabilitado.",
+    "resetSuccess": "{{check}} El módulo **{{name}}** ha sido reiniciado.",
+    "setupSuccess": "{{check}} El módulo **{{name}}** ha sido configurado.",
+    "setup": {
+      "confirm": {
+        "description": "Aegis realizará las siguientes acciones para configurar el módulo **{{title}}**:",
+        "button": "Confirmar configuración",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "setupCancelled": "❌ Configuración cancelada.",
+        "setupAborted": "❌ Configuración abortada.",
+        "setupFailed": "❌ La configuración falló. Inténtalo de nuevo.",
+        "setupTimedOut": "⏱️ La configuración expiró. Inténtalo de nuevo.",
+        "roleIdNotFound": "`❌` El ID del rol proporcionado no existe.",
+        "channelIdNotFound": "`❌` El ID del canal proporcionado no existe."
+      },
+      "summary": {
+        "completeHint": "Configuración completada. Ahora puedes habilitar el módulo con `/module enable`.",
+        "setKeyword": "Palabra clave establecida: `{{keyword}}`",
+        "keywordSet": "Palabra clave guardada: `{{keyword}}`",
+        "channelLinked": "Canal vinculado: <#{{id}}>",
+        "channelCreated": "Canal creado: <#{{id}}>",
+        "roleLinked": "Rol vinculado: <@&{{id}}>",
+        "roleCreated": "Rol creado: <@&{{id}}>"
+      },
+      "actions": {
+        "createRole": "Crear rol: **{{name}}**",
+        "useRole": "Usar rol existente: {{name}}",
+        "createChannel": "Crear canal: **#{{name}}**",
+        "useChannel": "Usar canal existente: <#{{id}}>"
+      },
+      "vanity": {
+        "modal": {
+          "title": "Configuración de Vanity Tracker",
+          "keywordLabel": "Palabra clave de estado (obligatorio)",
+          "keywordPlaceholder": "ej. discord.gg/meetspace",
+          "roleLabel": "ID o nombre del rol (opcional)",
+          "rolePlaceholder": "Rol vanity | Déjalo vacío para crearlo automáticamente",
+          "channelLabel": "ID o nombre del canal (opcional)",
+          "channelPlaceholder": "Canal de logs | Déjalo vacío para crearlo automáticamente"
+        }
+      },
+      "mod": {
+        "modal": {
+          "title": "Configuración de Moderación",
+          "logChannelLabel": "ID o nombre del canal de logs (opcional)",
+          "logChannelPlaceholder": "Déjalo vacío para crear #mod-logs",
+          "mutedRoleLabel": "ID o nombre del rol muteado (opcional)",
+          "mutedRolePlaceholder": "Déjalo vacío para crear un rol muteado",
+          "thresholdsLabel": "¿Habilitar thresholds? (Sí/No)",
+          "thresholdsPlaceholder": "Sí",
+          "thresholdsValueEnabled": "Sí",
+          "thresholdsValueDisabled": "No"
+        },
+        "summary": {
+          "thresholds": "Thresholds: **{{status}}**",
+          "mutedOverwrites": "Permisos muteados sincronizados: **{{updated}}** canales",
+          "mutedOverwritesWithFailures": "Permisos muteados sincronizados: **{{updated}}** canales ({{failed}} fallidos)"
+        }
+      },
+      "tickets": {
+        "modal": {
+          "title": "Configuración de Tickets",
+          "panelChannelLabel": "ID del canal del panel (obligatorio)",
+          "panelChannelPlaceholder": "Dejar en blanco para auto-crear",
+          "categoryLabel": "ID de la categoría (opcional)",
+          "categoryPlaceholder": "Dejar en blanco para auto-crear",
+          "transcriptChannelLabel": "ID del canal de transcripciones (opcional)",
+          "transcriptChannelPlaceholder": "Dejar en blanco para auto-crear",
+          "logChannelLabel": "ID del canal de logs (opcional)",
+          "logChannelPlaceholder": "Dejar en blanco para auto-crear",
+          "supporterRolesLabel": "IDs de roles de soporte (separados por comas)",
+          "supporterRolesPlaceholder": "ej. 123456789, 987654321"
+        },
+        "panelDescription": "Haz clic en el botón de abajo para abrir un ticket de soporte. Nuestro equipo te atenderá lo antes posible."
+      },
+      "counter": {
+        "modal": {
+          "title": "Configuración del contador",
+          "channelLabel": "ID o nombre del canal (opcional)",
+          "channelPlaceholder": "Vacío para crear #server-stats automáticamente"
+        },
+        "errors": {
+          "wrongChannelType": "`❌` El contador necesita un canal de texto o de anuncios.",
+          "missingPermissions": "`❌` Necesito **Ver canal** y **Enviar mensajes** en <#{{id}}>."
+        },
+        "summary": {
+          "published": "Contador publicado en <#{{id}}>"
+        }
+      }
+    },
+    "reset": {
+      "title": "Reiniciar {{name}}",
+      "description": "Esto borrará toda la configuración del módulo **{{name}}** en este servidor.",
+      "confirm": "Sí, reiniciar",
+      "cancel": "Cancelar",
+      "success": "✅ El módulo **{{name}}** ha sido reiniciado.",
+      "cancelled": "❌ Reinicio cancelado.",
+      "timedOut": "⏱️ Tiempo agotado. No se recibió respuesta.",
+      "deletions": {
+        "deleteChannel": "eliminar:Canal <#{{id}}>",
+        "unlinkChannel": "desvincular:Canal <#{{id}}>",
+        "deleteRole": "eliminar:Rol <@&{{id}}>",
+        "unlinkRole": "desvincular:Rol <@&{{id}}>",
+        "configOnly": "desvincular:Solo datos de configuración"
+      }
+    }
+  },
+  "prefix": {
+    "invalid": "{{cross}} El prefijo debe tener entre 1 y 5 caracteres y no puede contener espacios.",
+    "success": "{{check}} El prefijo ha sido actualizado a: `{{prefix}}`"
+  }
+}

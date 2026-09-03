@@ -1,0 +1,45 @@
+# Local development infrastructure: PostgreSQL and Redis only.
+#
+#   docker compose up -d      start both, wait until healthy
+#   docker compose down       stop (add -v to wipe the data volumes)
+#
+# The bot itself runs on the host — `pnpm run dev` — against these two.
+# Production runs the bot in a container; see docker-compose.prod.yml.
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: aegis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB:       ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:alpine
+    container_name: aegis-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:
