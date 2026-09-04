@@ -440,16 +440,21 @@ migration.
 
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md). The short version:
+
 Branches flow `feature/* → develop → main`. Nothing is pushed directly to either
-protected branch.
+protected branch — branch protection enforces that for administrators too.
 
-Commits are small, atomic and descriptive, with a conventional prefix
-(`feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `security`). A pull request
-states its objective, what changed, the risks, and what was actually run to
-verify it.
+Commit subjects follow `type(scope): summary`, where scope names the file, files
+or area touched. Commits are small and atomic, and explain *why* rather than
+restating the diff.
 
-Before opening one: `pnpm run build` passes, the diff contains nothing
-unintended, and no `.env`, credentials or local tooling files are included.
+Before opening a pull request, all four must pass: `pnpm run typecheck`,
+`pnpm run lint` (0 errors, 0 warnings), `pnpm run test`, `pnpm run build`. CI
+runs those plus a repository hygiene job and a Docker image build, and all are
+required status checks.
+
+Security issues go through [SECURITY.md](SECURITY.md), not a public issue.
 
 ---
 
