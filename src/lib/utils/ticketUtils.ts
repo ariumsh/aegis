@@ -284,7 +284,7 @@ export async function closeTicket(
 
     // Cancel any pending auto-close job
     if (ticket.autoCloseJobId) {
-        const { cancelAutoClose } = await import('./ticketQueue');
+        const { cancelAutoClose } = await import('./ticketQueue.js');
         await cancelAutoClose(ticket.autoCloseJobId).catch(() => null);
         await container.redis.del(`tickets:autoclose_job:${guild.id}:${ticket.id}`);
     }
@@ -309,7 +309,7 @@ export async function closeTicket(
     // Update channel permissions — remove user access, then post closed layout
     if (channel) {
         await channel.permissionOverwrites.delete(ticket.userId).catch(() => null);
-        const { getTicketClosedLayout } = await import('../layouts/ticketLayouts');
+        const { getTicketClosedLayout } = await import('../layouts/ticketLayouts.js');
         await channel.send(getTicketClosedLayout(ticket.ticketNumber) as any).catch(() => null);
     }
 

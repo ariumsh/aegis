@@ -10,6 +10,15 @@ updates:
       # Matches the repository's convention: type(scope): summary
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
+    ignore:
+      # typescript-eslint does not support TypeScript 7 yet, and lint is a
+      # required status check -- taking the major would mean shipping with the
+      # linter disabled. Tracked upstream at
+      # https://github.com/typescript-eslint/typescript-eslint/issues/10940
+      # Remove this entry once that lands.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
     groups:
       # discord.js and the Sapphire plugins move together; separate PRs for each
       # produce conflicts and a lot of noise for one logical upgrade.
