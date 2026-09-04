@@ -440,9 +440,3 @@ export function parseDuration(input: string): { ms: number, expiresAt: Date, for
     if (minutes) parts.push(`${minutes}m`);
     return { ms, expiresAt: new Date(Date.now() + ms), formatted: parts.join(' ') };
 }
-
-export function cleanAndTokenize(text: string): string[] {
-    const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    const cleaned = normalized.replace(/[^a-z0-9\s]/g, ' ');
-    return cleaned.split(/\s+/).filter(token => token.length > 0);
-}
