@@ -10,16 +10,3 @@ export class AegisUserError extends UserError {
         this.context = context;
     }
 }
-
-/**
- * For unexpected system failures that need full logging
- */
-export class AegisSystemError extends Error {
-    public readonly context: unknown;
-
-    constructor(message: string, context?: unknown) {
-        super(message);
-        this.name = 'AegisSystemError';
-        this.context = context;
-    }
-}
