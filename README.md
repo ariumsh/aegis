@@ -218,6 +218,7 @@ repository — `.env*` is ignored except for the template.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PREFIX` | `a!` | Default prefix for message commands. Per-guild prefixes override it |
+| `GUILD_DATA_RETENTION_DAYS` | `30` | Days a guild's data survives after the bot is removed. `0` deletes immediately |
 | `NODE_ENV` | `development` | Set to `production` on the server |
 | `DEVELOPMENT_GUILD_IDS` | *(empty)* | Comma-separated guild IDs to register slash commands to. Empty registers globally |
 | `API_PORT` | `4000` | Port for the stats endpoint |
