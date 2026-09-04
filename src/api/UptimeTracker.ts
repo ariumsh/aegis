@@ -65,7 +65,7 @@ export class UptimeTracker {
                 .zadd(KEY, now, String(now))
                 // Trimmed on write rather than by a TTL on the key: a TTL would
                 // drop the whole series at once, and the series is the point.
-                .zremrangebyscore(KEY, '-inf', now - RETENTION_MS)
+                .zremrangebyscore(KEY, '-inf', String(now - RETENTION_MS))
                 .exec();
         } catch (error) {
             // A missed heartbeat is indistinguishable from downtime, which is
@@ -77,13 +77,16 @@ export class UptimeTracker {
 
     /** Heartbeat timestamps within a window, oldest first. */
     private async heartbeatsBetween(from: number, to: number): Promise<number[]> {
-        const raw = await container.redis.zrangebyscore(KEY, from, `(${to}`);
+        // ioredis 6 types the range bounds as string | Buffer rather than
+        // accepting a number, so the lower bound is stringified explicitly. The
+        // upper stays exclusive via the "(" prefix.
+        const raw = await container.redis.zrangebyscore(KEY, String(from), `(${to}`);
         return raw.map(Number);
     }
 
     /** Timestamp of the first heartbeat ever recorded, or null when there are none. */
     private async firstHeartbeat(): Promise<number | null> {
-        const [first] = await container.redis.zrange(KEY, 0, 0);
+        const [first] = await container.redis.zrange(KEY, '0', '0');
         return first === undefined ? null : Number(first);
     }
 
