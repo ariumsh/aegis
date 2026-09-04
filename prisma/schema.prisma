@@ -124,24 +124,6 @@ model SilentBan {
 }
 
 // ─────────────────────────────────────────────
-//  WarnLog
-// ─────────────────────────────────────────────
-
-model WarnLog {
-    id          Int      @id @default(autoincrement())
-    guildId     String   @map("guild_id")
-    userId      String   @map("user_id")
-    moderatorId String   @map("moderator_id")
-    reason      String?  @db.VarChar(500)
-    caseNumber  Int      @default(0) @map("case_number")
-    createdAt   DateTime @default(now()) @map("created_at")
-    updatedAt   DateTime @updatedAt @map("updated_at")
-
-    @@index([guildId, userId], name: "warn_guild_user")
-    @@map("warn_logs")
-}
-
-// ─────────────────────────────────────────────
 //  ModLog
 // ─────────────────────────────────────────────
 

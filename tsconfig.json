@@ -2,16 +2,26 @@
   "compilerOptions": {
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+
     "target": "ESNext",
-    "module": "CommonJS",
     "lib": ["ESNext"],
+
+    // The bot is emitted as CommonJS and started with `node dist/index.js`.
+    // node16 pairs the CommonJS emit with the resolution algorithm Node
+    // actually uses, including the "exports" field that "node10" ignored.
+    //
+    // TypeScript 7 removed "node10" (which "node" was an alias for), so this is
+    // a required migration rather than a preference.
+    "module": "node16",
+    "moduleResolution": "node16",
+
     "outDir": "./dist",
     "rootDir": "./src",
+
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],

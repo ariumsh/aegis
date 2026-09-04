@@ -26,8 +26,8 @@ import { AegisClient } from './structures/AegisClient';
 import { container } from '@sapphire/framework';
 import { setupVanityWorker } from './workers/VanityWorker';
 import { setupSilentBanWorker } from './workers/SilentBanWorker';
-import { setupMuteWorker } from './workers/MuteWorker';
-import { setupTempBanWorker } from './workers/TempBanWorker';
+import { setupSanctionExpiryWorker } from './workers/SanctionExpiryWorker';
+import { setupRetentionWorker } from './workers/RetentionWorker';
 import { setupTicketWorker } from './workers/TicketWorker';
 import { startStatsServer } from './api/StatsServer';
 import { CounterService } from './services/CounterService';
@@ -46,8 +46,8 @@ async function bootstrap() {
 
         container.vanityWorker    = setupVanityWorker();
         container.silentBanWorker = setupSilentBanWorker();
-        container.muteWorker      = setupMuteWorker();
-        container.tempBanWorker   = setupTempBanWorker();
+        container.sanctionWorker  = setupSanctionExpiryWorker();
+        container.retentionWorker = setupRetentionWorker();
         container.ticketWorker    = setupTicketWorker();
 
         // Started in the Ready listener: it needs the guild cache populated.
@@ -83,8 +83,8 @@ declare module '@sapphire/pieces' {
     interface Container {
         vanityWorker:    ReturnType<typeof setupVanityWorker>;
         silentBanWorker: ReturnType<typeof setupSilentBanWorker>;
-        muteWorker:      ReturnType<typeof setupMuteWorker>;
-        tempBanWorker:   ReturnType<typeof setupTempBanWorker>;
+        sanctionWorker:  ReturnType<typeof setupSanctionExpiryWorker>;
+        retentionWorker: ReturnType<typeof setupRetentionWorker>;
         ticketWorker:    ReturnType<typeof setupTicketWorker>;
         counterService:  CounterService;
     }

@@ -40,6 +40,9 @@ Seventeen commands: `warn`, `mute`, `timeout`, `ban`, `tempban`, `softban`,
 `silentban`, `kick`, their reversals, plus `slowmode` and `lockdown` for
 channels, and `case` / `remove-case` for the record itself.
 
+`ban` and `tempban` accept a user who has already left the server — pass the id
+and the ban lands anyway, which is the case where a ban is usually most wanted.
+
 Every sanction is written to `mod_logs` with a per-guild case number, mirrored
 into the configured log channel through a webhook, and DM'd to the member.
 
@@ -137,9 +140,10 @@ fallback. Every write to `GuildConfig` must be followed by
 `CacheManager.syncGuild()`, which is the single place that knows how config maps
 onto cache keys.
 
-Deferred work runs through BullMQ (vanity role checks, silent-ban expiry, ticket
-auto-close). Mute and tempban expiry currently run on interval timers rather
-than queues — see [Troubleshooting](#troubleshooting).
+All deferred work runs through BullMQ: vanity role checks, silent-ban expiry,
+ticket auto-close, and mute and tempban expiry. Each sanction gets a delayed job
+for its own duration rather than being found by a sweep, so expiry is accurate to
+the sanction and BullMQ hands each job to exactly one consumer.
 
 ---
 
@@ -214,10 +218,12 @@ repository — `.env*` is ignored except for the template.
 | Variable | Default | Purpose |
 |---|---|---|
 | `PREFIX` | `a!` | Default prefix for message commands. Per-guild prefixes override it |
+| `GUILD_DATA_RETENTION_DAYS` | `30` | Days a guild's data survives after the bot is removed. `0` deletes immediately |
 | `NODE_ENV` | `development` | Set to `production` on the server |
 | `DEVELOPMENT_GUILD_IDS` | *(empty)* | Comma-separated guild IDs to register slash commands to. Empty registers globally |
 | `API_PORT` | `4000` | Port for the stats endpoint |
 | `STATS_API_TOKEN` | *(empty)* | Bearer token for `/stats`. **Required when `NODE_ENV=production`** |
+| | | `/stats/history` returns 24 hourly, 7 daily and 30 daily uptime buckets with ISO timestamps. Heartbeats live in Redis, so the series survives a restart and an outage shows as a gap |
 | `COUNTER_INTERVAL_MS` | `5000` | Counter render floor. Minimum 5000 |
 | `COUNTER_COUNTS_INTERVAL_MS` | `60000` | How often member counts are re-fetched. Minimum 15000, never faster than the render floor |
 
@@ -376,6 +382,11 @@ docker compose -f docker-compose.prod.yml up -d --build bot
 The image is baked from the `Dockerfile`, so **`docker restart aegis-bot` does
 not pick up new code** — it restarts the old image. Rebuild.
 
+The runtime stage drops build-time dependencies and runs as the unprivileged
+`node` user. The Prisma CLI is not in the image as a result, so run
+`prisma migrate deploy` from the host or from the builder stage rather than
+inside the running container.
+
 Apply migrations before or immediately after deploying:
 
 ```bash
@@ -422,10 +433,13 @@ that Compose is up and that you are using host port **6380**, not 6379.
 skipped `CacheManager.syncGuild()`, the cache serves the old value until the next
 restart warms it from PostgreSQL.
 
-**A sanction is not lifted on time.** Mute and tempban expiry run on 60-second
-interval timers rather than queues, so expiry is accurate to about a minute.
-These timers are also not safe to run in more than one instance — two processes
-would both try to lift the same sanction. Run a single instance.
+**A sanction is not lifted on time.** Expiry is a delayed BullMQ job scheduled
+for the sanction's own duration, so check that Redis is reachable and that the
+queue is being consumed. `Ready.ts` reconciles on every boot: PostgreSQL is
+authoritative, so anything still active in the database is re-queued at startup,
+and anything that expired while the bot was down is lifted immediately. A
+sanction stuck past its expiry usually means the worker is not running, not that
+the job was lost.
 
 **The counter stops updating.** After a failed edit the guild backs off to the
 slow cadence until it recovers. If the message was deleted, the next tick

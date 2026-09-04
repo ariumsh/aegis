@@ -10,6 +10,7 @@ import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
 import { recordAndBuildSanctionConfirmation } from '../../../command-helpers/mod/shared/sanctionFlow';
 import { requireModPermission } from '../../../command-helpers/mod/shared/permissionGuard';
+import { scheduleExpiry } from '../../../services/SanctionExpiryService';
 
 @ApplyOptions<Command.Options>({
     name: 'mute',
@@ -58,6 +59,8 @@ export class MuteCommand extends Command {
             create: { guildId, userId: target.id, moderatorId, reason, expiresAt: parsed?.expiresAt ?? null },
             update: { moderatorId, reason, expiresAt: parsed?.expiresAt ?? null },
         });
+
+        await scheduleExpiry('unmute', guildId, target.id, parsed?.expiresAt ?? null);
 
         await sendModDM({ userId: target.id, moderatorId, action: 'mute', guild, reason, duration: parsed?.formatted ?? permanentLabel });
         const { layout } = await recordAndBuildSanctionConfirmation({
