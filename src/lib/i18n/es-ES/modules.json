@@ -27,7 +27,8 @@
       "optionDescription": "El mensaje a enviar al mencionar al bot (deja vacío para restablecer)",
       "reset": "{{check}} La respuesta de mención ha sido restablecida al valor predeterminado.",
       "success": "{{check}} Respuesta de mención actualizada.",
-      "defaultResponse": "¡Hola! Mi prefijo es `{{prefix}}`."
+      "defaultResponse": "¡Hola! Mi prefijo es `{{prefix}}`.",
+      "sourceOffer": "-# Código: {{url}} · AGPL-3.0"
     }
   },
   "module": {

@@ -22,3 +22,16 @@ export const DEFAULT_PREFIX = 'a!';
  * migration, not a rename.
  */
 export const WEBHOOK_NAME = 'Aegis';
+
+/**
+ * Where the source for this bot lives.
+ *
+ * Aegis is AGPL-3.0. Section 13 requires that anyone who modifies it and runs
+ * it for users over a network prominently offer those users the corresponding
+ * source. A Discord bot is exactly that situation, so the offer is appended to
+ * every mention reply rather than left to a README nobody in the server reads.
+ *
+ * If you fork and deploy this, point this at your fork. Leaving it pointing
+ * here while running modified code does not satisfy the licence.
+ */
+export const SOURCE_URL = 'https://github.com/ariumsh/aegis';
