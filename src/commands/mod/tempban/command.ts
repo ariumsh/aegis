@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { Guild, GuildMember, Message } from 'discord.js';
+import { Guild, GuildMember, Message, User } from 'discord.js';
 import { requireModConfig, validateMod, sendModDM, parseDuration, checkThresholds } from '../../../lib/utils/ModUtils';
 import { prisma } from '../../../database/db';
 import { Emojis } from '../../../lib/constants/emojis';
@@ -24,15 +24,27 @@ export class TempBanCommand extends Command {
         guildId: string;
         guild: Guild;
         moderatorId: string;
-        target: GuildMember;
+        /** The user being banned. Present in the guild or not. */
+        target: User;
+        /** Their membership, when they are still in the guild. */
+        member: GuildMember | null;
         durationInput: string;
         reason: string | null;
     }) {
-        const { source, guildId, guild, moderatorId, target, durationInput, reason } = data;
+        const { source, guildId, guild, moderatorId, target, member, durationInput, reason } = data;
 
         const executor = source instanceof Message ? source.member as GuildMember : source.member as GuildMember;
         await requireModPermission(executor, 'tempban');
-        await validateMod(source, target);
+        if (member) {
+            // Hierarchy compares role positions, which means nothing for
+            // someone who has left and has no roles here.
+            await validateMod(source, member);
+            if (!member.bannable) throw new AegisUserError('modcommands:mod.ban.notBannable');
+        } else {
+            // The two checks from validateMod that still apply with no member.
+            if (target.id === moderatorId) throw new AegisUserError('errors:mod_self');
+            if (target.id === this.container.client.user?.id) throw new AegisUserError('errors:mod_bot');
+        }
         await requireModConfig(guildId);
 
         const duration = parseDuration(durationInput);
@@ -45,7 +57,7 @@ export class TempBanCommand extends Command {
             guildId,
             action: 'tempban',
             userId: target.id,
-            userTag: target.user.tag,
+            userTag: target.tag,
             moderatorId,
             guild,
             reason,
@@ -53,7 +65,7 @@ export class TempBanCommand extends Command {
             expiresAt: duration.expiresAt,
             confirmationKey: 'modcommands:sanctions.confirmations.tempban',
             emoji: Emojis.ban_emoji,
-            userDisplay: target.toString(),
+            userDisplay: `<@${target.id}>`,
             thresholdActionTriggered: 'tempban',
             skipThresholdCheck: true
         });
@@ -78,12 +90,14 @@ export class TempBanCommand extends Command {
 
         await scheduleExpiry('unban', guildId, target.id, duration.expiresAt);
 
-        await target.ban({ reason: reason ?? `Tempban: ${duration.formatted}` });
+        // bans.create takes an id, so it works whether or not they are still in
+        // the guild -- unlike member.ban(), which needs a membership.
+        await guild.bans.create(target.id, { reason: reason ?? `Tempban: ${duration.formatted}` });
 
         await checkThresholds({
             guildId,
             userId: target.id,
-            userTag: target.user.tag,
+            userTag: target.tag,
             moderatorId,
             guild,
             actionTriggered: 'tempban'
@@ -106,13 +120,15 @@ export class TempBanCommand extends Command {
     }
 
     public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-        const target = interaction.options.getMember('user') as GuildMember | null;
+        // getUser rather than getMember: a user option resolves for anyone
+        // Discord knows about, while getMember returns null the moment they are
+        // not in this guild -- which is exactly when a ban is most wanted.
+        const target = interaction.options.getUser('user', true);
+        const member = interaction.options.getMember('user') as GuildMember | null;
         const durationInput = interaction.options.getString('duration', true);
         const reason = interaction.options.getString('reason') ?? null;
-        
-        await interaction.deferReply();
 
-        if (!target) throw new AegisUserError('errors:memberNotFound');
+        await interaction.deferReply();
 
         const response = await this.executeTempBan({
             source: interaction,
@@ -120,6 +136,7 @@ export class TempBanCommand extends Command {
             guild: interaction.guild!,
             moderatorId: interaction.user.id,
             target,
+            member,
             durationInput,
             reason
         });
@@ -128,7 +145,8 @@ export class TempBanCommand extends Command {
     }
 
     public async messageRun(message: Message, args: Args) {
-        const target = await args.pick('member').catch(() => { throw new AegisUserError('errors:memberNotFound'); });
+        // 'user' resolves a mention or a raw id without requiring membership.
+        const target = await args.pick('user').catch(() => { throw new AegisUserError('errors:memberNotFound'); });
         const durationInput = await args.pick('string').catch(() => { throw new AegisUserError('errors:mod_invalidDuration'); });
         const reason = await args.rest('string').catch(() => null);
 
@@ -138,6 +156,7 @@ export class TempBanCommand extends Command {
             guild: message.guild!,
             moderatorId: message.author.id,
             target,
+            member: await message.guild!.members.fetch(target.id).catch(() => null),
             durationInput,
             reason
         });

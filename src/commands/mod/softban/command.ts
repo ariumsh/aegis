@@ -35,7 +35,7 @@ export class SoftbanCommand extends Command {
         await requireModConfig(guildId);
 
         await sendModDM({ userId: target.id, moderatorId, action: 'softban', guild, reason });
-        await target.ban({ reason: reason ?? undefined, deleteMessageDays: deleteDays });
+        await target.ban({ reason: reason ?? undefined, deleteMessageSeconds: deleteDays * 24 * 60 * 60 });
 
         const auditReason = await resolveKey(source, 'modcommands:mod.ban.softbanAuditReason');
         await guild.members.unban(target.id, auditReason).catch((err: any) => {

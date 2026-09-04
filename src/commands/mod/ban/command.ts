@@ -1,6 +1,6 @@
 import { Command, Args } from '@sapphire/framework';
 import { ApplyOptions } from '@sapphire/decorators';
-import { GuildMember, Message } from 'discord.js';
+import { GuildMember, Message, User } from 'discord.js';
 import { requireModConfig, validateMod, sendModDM } from '../../../lib/utils/ModUtils';
 import { Emojis } from '../../../lib/constants/emojis';
 import { AegisUserError } from '../../../lib/structures/Errors';
@@ -21,33 +21,57 @@ export class BanCommand extends Command {
         guildId: string;
         guild: NonNullable<Command.ChatInputCommandInteraction['guild']>;
         moderatorId: string;
-        target: GuildMember;
+        /** The user being banned. Present in the guild or not. */
+        target: User;
+        /** Their membership, when they are still in the guild. */
+        member: GuildMember | null;
         reason: string | null;
         deleteDays: number;
     }) {
-        const { source, guildId, guild, moderatorId, target, reason, deleteDays } = data;
+        const { source, guildId, guild, moderatorId, target, member, reason, deleteDays } = data;
 
-        const executor = source instanceof Message ? source.member as GuildMember : source.member as GuildMember;
+        const executor = source.member as GuildMember;
         await requireModPermission(executor, 'ban');
-        await validateMod(source, target);
-        if (!target.bannable) throw new AegisUserError('modcommands:mod.ban.notBannable');
+
+        if (member) {
+            // Hierarchy only means something while they are in the guild: it
+            // compares role positions, and someone who has left has no roles
+            // here to compare.
+            await validateMod(source, member);
+            if (!member.bannable) throw new AegisUserError('modcommands:mod.ban.notBannable');
+        } else {
+            // The two checks from validateMod that still apply with no member.
+            if (target.id === moderatorId) throw new AegisUserError('errors:mod_self');
+            if (target.id === this.container.client.user?.id) throw new AegisUserError('errors:mod_bot');
+        }
+
         await requireModConfig(guildId);
 
-        await sendModDM({ userId: target.id, moderatorId, action: 'ban', guild, reason });
-        await target.ban({ reason: reason ?? undefined, deleteMessageDays: deleteDays });
+        // Only worth attempting while they can still receive it. Discord will
+        // not deliver a DM to someone with no mutual server.
+        if (member) {
+            await sendModDM({ userId: target.id, moderatorId, action: 'ban', guild, reason });
+        }
+
+        // guild.bans.create takes an id, so it covers both cases -- unlike
+        // member.ban(), which needs a membership the target may not have.
+        await guild.bans.create(target.id, {
+            reason: reason ?? undefined,
+            deleteMessageSeconds: deleteDays * 24 * 60 * 60
+        });
 
         const { layout } = await recordAndBuildSanctionConfirmation({
             source,
             guildId,
             action: 'ban',
             userId: target.id,
-            userTag: target.user.tag,
+            userTag: target.tag,
             moderatorId,
             guild,
             reason,
             confirmationKey: 'modcommands:sanctions.confirmations.ban',
             emoji: Emojis.ban_emoji,
-            userDisplay: target.toString(),
+            userDisplay: `<@${target.id}>`,
             thresholdActionTriggered: 'ban'
         });
 
@@ -68,13 +92,15 @@ export class BanCommand extends Command {
     }
 
     public async chatInputRun(interaction: Command.ChatInputCommandInteraction) {
-        const target     = interaction.options.getMember('user') as GuildMember | null;
+        // getUser rather than getMember: a user option resolves for anyone
+        // Discord knows about, while getMember returns null the moment they are
+        // not in this guild -- which is exactly when a ban is most wanted.
+        const target     = interaction.options.getUser('user', true);
+        const member     = interaction.options.getMember('user') as GuildMember | null;
         const reason     = interaction.options.getString('reason') ?? null;
         const deleteDays = interaction.options.getInteger('delete_days') ?? 0;
-        
-        await interaction.deferReply();
 
-        if (!target) throw new AegisUserError('errors:memberNotFound');
+        await interaction.deferReply();
 
         const response = await this.executeBan({
             source: interaction,
@@ -82,6 +108,7 @@ export class BanCommand extends Command {
             guild: interaction.guild!,
             moderatorId: interaction.user.id,
             target,
+            member,
             reason,
             deleteDays
         });
@@ -90,8 +117,14 @@ export class BanCommand extends Command {
     }
 
     public async messageRun(message: Message, args: Args) {
-        const target = await args.pick('member');
+        // 'user' resolves a mention or a raw id without requiring membership;
+        // 'member' would fail outright for someone who has left.
+        const target = await args.pick('user').catch(() => {
+            throw new AegisUserError('errors:memberNotFound');
+        });
         const reason = await args.rest('string').catch(() => null);
+
+        const member = await message.guild!.members.fetch(target.id).catch(() => null);
 
         const response = await this.executeBan({
             source: message,
@@ -99,6 +132,7 @@ export class BanCommand extends Command {
             guild: message.guild!,
             moderatorId: message.author.id,
             target,
+            member,
             reason,
             deleteDays: 0
         });
@@ -106,4 +140,3 @@ export class BanCommand extends Command {
         return message.reply(response);
     }
 }
-
