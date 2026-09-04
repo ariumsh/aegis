@@ -40,6 +40,9 @@ Seventeen commands: `warn`, `mute`, `timeout`, `ban`, `tempban`, `softban`,
 `silentban`, `kick`, their reversals, plus `slowmode` and `lockdown` for
 channels, and `case` / `remove-case` for the record itself.
 
+`ban` and `tempban` accept a user who has already left the server — pass the id
+and the ban lands anyway, which is the case where a ban is usually most wanted.
+
 Every sanction is written to `mod_logs` with a per-guild case number, mirrored
 into the configured log channel through a webhook, and DM'd to the member.
 
