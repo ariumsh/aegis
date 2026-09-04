@@ -103,8 +103,9 @@ exists — a data migration, not a rename.
   webhooks, threshold evaluation and mute application. Changes ripple.
 - `checkThresholds` swallows errors into a log line, so a failed automatic
   sanction is invisible to the moderator who triggered it.
-- `MuteWorker` and `TempBanWorker` are interval timers, not queues. They are not
-  safe to run in more than one instance.
+- Sanction expiry is scheduled at write time. Anything that creates or removes
+  an `ActiveMute` or `ActiveTempBan` row must call `scheduleExpiry` or
+  `cancelExpiry` alongside it, or the sanction outlives its duration.
 - `ticketUtils.ts` uses a dynamic `await import()` to break a circular
   dependency. Do not tidy it without resolving the cycle first.
 

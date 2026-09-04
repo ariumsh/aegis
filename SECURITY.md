@@ -46,9 +46,6 @@ service to compromise — a vulnerability here affects whoever is running it.
 
 Documented rather than hidden. These are real and unfixed:
 
-- **`MuteWorker` and `TempBanWorker` are interval timers, not queues.** Expiry is
-  accurate to roughly 60 seconds, and they are **not safe to run in more than one
-  instance** — two processes will both act on the same expiry. Run one.
 - **`checkThresholds` swallows errors into a log line.** An automatic sanction
   that fails is invisible to the moderator who triggered it.
 - **No data retention policy.** User IDs and moderator-written reasons are stored
