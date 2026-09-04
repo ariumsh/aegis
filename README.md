@@ -222,6 +222,7 @@ repository — `.env*` is ignored except for the template.
 | `DEVELOPMENT_GUILD_IDS` | *(empty)* | Comma-separated guild IDs to register slash commands to. Empty registers globally |
 | `API_PORT` | `4000` | Port for the stats endpoint |
 | `STATS_API_TOKEN` | *(empty)* | Bearer token for `/stats`. **Required when `NODE_ENV=production`** |
+| | | `/stats/history` returns 24 hourly, 7 daily and 30 daily uptime buckets with ISO timestamps. Heartbeats live in Redis, so the series survives a restart and an outage shows as a gap |
 | `COUNTER_INTERVAL_MS` | `5000` | Counter render floor. Minimum 5000 |
 | `COUNTER_COUNTS_INTERVAL_MS` | `60000` | How often member counts are re-fetched. Minimum 15000, never faster than the render floor |
 

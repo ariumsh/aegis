@@ -66,8 +66,18 @@ export function startStatsServer(port: number): void {
         }
 
         if (url === '/stats/history') {
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(tracker.getHistory()));
+            // Reads from Redis now rather than process memory, so it is async.
+            tracker
+                .getHistory()
+                .then((history) => {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(history));
+                })
+                .catch((error) => {
+                    container.logger.error('[StatsServer] Could not build uptime history:', error);
+                    res.writeHead(500, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'history unavailable' }));
+                });
             return;
         }
 
