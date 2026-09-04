@@ -27,6 +27,7 @@ import { container } from '@sapphire/framework';
 import { setupVanityWorker } from './workers/VanityWorker';
 import { setupSilentBanWorker } from './workers/SilentBanWorker';
 import { setupSanctionExpiryWorker } from './workers/SanctionExpiryWorker';
+import { setupRetentionWorker } from './workers/RetentionWorker';
 import { setupTicketWorker } from './workers/TicketWorker';
 import { startStatsServer } from './api/StatsServer';
 import { CounterService } from './services/CounterService';
@@ -46,6 +47,7 @@ async function bootstrap() {
         container.vanityWorker    = setupVanityWorker();
         container.silentBanWorker = setupSilentBanWorker();
         container.sanctionWorker  = setupSanctionExpiryWorker();
+        container.retentionWorker = setupRetentionWorker();
         container.ticketWorker    = setupTicketWorker();
 
         // Started in the Ready listener: it needs the guild cache populated.
@@ -82,6 +84,7 @@ declare module '@sapphire/pieces' {
         vanityWorker:    ReturnType<typeof setupVanityWorker>;
         silentBanWorker: ReturnType<typeof setupSilentBanWorker>;
         sanctionWorker:  ReturnType<typeof setupSanctionExpiryWorker>;
+        retentionWorker: ReturnType<typeof setupRetentionWorker>;
         ticketWorker:    ReturnType<typeof setupTicketWorker>;
         counterService:  CounterService;
     }

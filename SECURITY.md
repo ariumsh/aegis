@@ -48,9 +48,10 @@ Documented rather than hidden. These are real and unfixed:
 
 - **`checkThresholds` swallows errors into a log line.** An automatic sanction
   that fails is invisible to the moderator who triggered it.
-- **No data retention policy.** User IDs and moderator-written reasons are stored
-  indefinitely, with no purge on guild departure and no erasure mechanism. If you
-  operate where that matters, that gap is yours to close.
+- **Retention is per guild, not per subject.** Removing the bot from a server
+  schedules deletion of everything held for it (`GUILD_DATA_RETENTION_DAYS`,
+  default 30). There is no mechanism to erase one user's records from a guild the
+  bot is still in. If you need that, it is not implemented.
 - **The stats endpoint is unauthenticated when `STATS_API_TOKEN` is unset.**
   Startup refuses this when `NODE_ENV=production`, but a non-production instance
   with the port published will serve guild and user counts to anyone.
