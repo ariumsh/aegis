@@ -2,7 +2,12 @@ FROM node:22-slim AS builder
 
 WORKDIR /app
 
-RUN corepack enable
+# corepack ships with Node 22 but was removed from the Node distribution in
+# later majors, so `corepack enable` alone fails with exit 127 on those images.
+# Installing it explicitly keeps this build working across Node versions while
+# leaving `packageManager` in package.json as the single source of truth for
+# which pnpm to use.
+RUN npm install -g corepack@latest && corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY prisma ./prisma/
