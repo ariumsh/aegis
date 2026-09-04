@@ -1,0 +1,34 @@
+name: Feature request
+description: Propose a change in behaviour or a new capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What is hard or impossible today. Describe the situation, not the solution.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Moderation
+        - Tickets
+        - Vanity tracker
+        - Member counter
+        - Configuration
+        - Permissions
+        - Infrastructure or deployment
+        - Other
+    validations:
+      required: true

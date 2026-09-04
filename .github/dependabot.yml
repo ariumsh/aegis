@@ -1,0 +1,45 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      # Matches the repository's convention: type(scope): summary
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      # discord.js and the Sapphire plugins move together; separate PRs for each
+      # produce conflicts and a lot of noise for one logical upgrade.
+      discord:
+        patterns:
+          - "discord.js"
+          - "@sapphire/*"
+      prisma:
+        patterns:
+          - "prisma"
+          - "@prisma/*"
+      lint-and-types:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "typescript-eslint"
+          - "prettier*"
+          - "@types/*"
+          - "typescript"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci(deps)"
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "chore(Dockerfile)"

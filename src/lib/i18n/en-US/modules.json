@@ -27,7 +27,8 @@
       "optionDescription": "The message to send when the bot is mentioned (leave empty to reset)",
       "reset": "{{check}} The mention response has been reset to the default.",
       "success": "{{check}} Mention response updated.",
-      "defaultResponse": "Hi! My prefix is `{{prefix}}`."
+      "defaultResponse": "Hi! My prefix is `{{prefix}}`.",
+      "sourceOffer": "-# Source: {{url}} · AGPL-3.0"
     }
   },
   "module": {

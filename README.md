@@ -2,6 +2,9 @@
 
 A modular Discord moderation bot, built by [Arium](https://github.com/ariumsh).
 
+[![Licence: AGPL v3](https://img.shields.io/badge/licence-AGPL--3.0-blue.svg)](LICENSE)
+[![CI](https://github.com/ariumsh/aegis/actions/workflows/ci.yml/badge.svg)](https://github.com/ariumsh/aegis/actions/workflows/ci.yml)
+
 Aegis gives a server's staff a moderation record they can trust: every action is
 a numbered case, repeated offences escalate on rules the server writes itself,
 and who may run what is decided by a permission model that sits above Discord's
@@ -437,19 +440,45 @@ migration.
 
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md). The short version:
+
 Branches flow `feature/* → develop → main`. Nothing is pushed directly to either
-protected branch.
+protected branch — branch protection enforces that for administrators too.
 
-Commits are small, atomic and descriptive, with a conventional prefix
-(`feat`, `fix`, `refactor`, `chore`, `docs`, `test`, `security`). A pull request
-states its objective, what changed, the risks, and what was actually run to
-verify it.
+Commit subjects follow `type(scope): summary`, where scope names the file, files
+or area touched. Commits are small and atomic, and explain *why* rather than
+restating the diff.
 
-Before opening one: `pnpm run build` passes, the diff contains nothing
-unintended, and no `.env`, credentials or local tooling files are included.
+Before opening a pull request, all four must pass: `pnpm run typecheck`,
+`pnpm run lint` (0 errors, 0 warnings), `pnpm run test`, `pnpm run build`. CI
+runs those plus a repository hygiene job and a Docker image build, and all are
+required status checks.
+
+Security issues go through [SECURITY.md](SECURITY.md), not a public issue.
 
 ---
 
 ## Licence
 
-Proprietary. Copyright (c) 2026 Arium. All rights reserved. See [LICENSE](LICENSE).
+**GNU Affero General Public License v3.0 or later.** Copyright (c) 2026 Arium.
+See [LICENSE](LICENSE).
+
+AGPL rather than a permissive licence for one reason: a Discord bot is a network
+service. Under MIT or Apache, anyone could take this, rebrand it, and run it as a
+competing bot with no obligation to give anything back — and under plain GPL they
+still could, because GPL's copyleft triggers on *distribution* and nobody
+distributes a bot, they host it. AGPL section 13 closes that gap: modify Aegis
+and run it for users over a network, and you owe those users your source.
+
+What this means in practice:
+
+- **Running it unmodified is unrestricted.** Self-host all you like.
+- **Modify it and run it for others** — including in a single Discord server —
+  and you must offer those users your modified source.
+- **Fork it** and you must keep it AGPL, and point `SOURCE_URL` in
+  `src/lib/constants/bot.ts` at your fork. The bot appends that link to every
+  mention reply, which is how it satisfies section 13; leaving it pointing at
+  this repository while running modified code does not.
+
+If the AGPL does not suit your use, ask — a separate licence is a conversation,
+not a refusal.
