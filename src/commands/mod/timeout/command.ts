@@ -9,6 +9,7 @@ import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
 import { recordAndBuildSanctionConfirmation } from '../../../command-helpers/mod/shared/sanctionFlow';
 import { requireModPermission } from '../../../command-helpers/mod/shared/permissionGuard';
+import { scheduleExpiry } from '../../../services/SanctionExpiryService';
 
 @ApplyOptions<Command.Options>({
     name: 'timeout',
@@ -66,6 +67,8 @@ export class TimeoutCommand extends Command {
                 expiresAt: duration.expiresAt
             },
         });
+
+        await scheduleExpiry('unmute', guildId, target.id, duration.expiresAt);
 
         const { caseNumber, layout } = await recordAndBuildSanctionConfirmation({
             source,

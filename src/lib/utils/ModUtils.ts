@@ -4,6 +4,7 @@ import { container, Command } from '@sapphire/framework';
 import { getSanctionLayout } from '../layouts/modCommandLayouts';
 import { AegisUserError } from '../structures/Errors';
 import { WEBHOOK_NAME } from '../constants/bot';
+import { scheduleExpiry } from '../../services/SanctionExpiryService';
 
 export type ModAction = 'warn' | 'mute' | 'ban' | 'tempban' | 'softban' | 'kick' | 'timeout' | 'untimeout' | 'unmute' | 'unban';
 
@@ -331,6 +332,7 @@ export async function checkThresholds(data: {
                     create: { guildId: data.guildId, userId: data.userId, moderatorId: container.client.user!.id, reason, expiresAt: banDuration.expiresAt, caseNumber: caseNum ?? 0 },
                     update: { moderatorId: container.client.user!.id, reason, expiresAt: banDuration.expiresAt, caseNumber: caseNum ?? 0 },
                 });
+                await scheduleExpiry('unban', data.guildId, data.userId, banDuration.expiresAt);
                 await member.ban({ reason });
                 break;
             }
@@ -384,6 +386,8 @@ export async function applyMute(data: {
             create: { guildId: data.guildId, userId: data.userId, moderatorId: data.moderatorId, reason: data.reason ?? null, expiresAt: data.expiresAt ?? null, caseNumber: caseNumber ?? 0 },
             update: { moderatorId: data.moderatorId, reason: data.reason ?? null, expiresAt: data.expiresAt ?? null, caseNumber: caseNumber ?? 0 },
         });
+
+        await scheduleExpiry('unmute', data.guildId, data.userId, data.expiresAt ?? null);
 
         await sendModDM({ userId: data.userId, moderatorId: data.moderatorId, action: 'timeout', guild: data.guild, reason: data.reason, duration: data.duration });
 

@@ -11,6 +11,7 @@ import { recordAndBuildSanctionConfirmation } from '../../../command-helpers/mod
 import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
 import { requireModPermission } from '../../../command-helpers/mod/shared/permissionGuard';
+import { cancelExpiry } from '../../../services/SanctionExpiryService';
 
 @ApplyOptions<Command.Options>({
     name: 'unmute',
@@ -43,6 +44,7 @@ export class UnmuteCommand extends Command {
 
         if (!hasTimeout) {
             await prisma.activeMute.deleteMany({ where: { guildId, userId: target.id } });
+            await cancelExpiry('unmute', guildId, target.id);
         }
 
         const { layout } = await recordAndBuildSanctionConfirmation({

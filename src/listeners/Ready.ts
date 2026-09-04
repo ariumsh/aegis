@@ -3,6 +3,7 @@ import { Events } from 'discord.js';
 import { prisma } from '../database/db';
 import { CacheManager } from '../database/CacheManager';
 import { loadSilentBanIndex } from '../services/SilentBanService';
+import { reconcileExpiries } from '../services/SanctionExpiryService';
 
 
 // Ready listener ──────────────────
@@ -39,6 +40,14 @@ export class ReadyListener extends Listener {
         // in memory before the first one arrives.
 
         await loadSilentBanIndex();
+
+
+        // Re-schedule pending sanction expiries ──────────
+        // PostgreSQL is authoritative; Redis can be flushed or lose a job. This
+        // makes the queue agree with the database again, and lifts anything
+        // that expired while the bot was down.
+
+        await reconcileExpiries();
 
 
         // Start the member counter ──────────

@@ -9,6 +9,7 @@ import modEn from '../../../lib/i18n/en-US/modcommands.json';
 import modEs from '../../../lib/i18n/es-ES/modcommands.json';
 import { recordAndBuildSanctionConfirmation } from '../../../command-helpers/mod/shared/sanctionFlow';
 import { requireModPermission } from '../../../command-helpers/mod/shared/permissionGuard';
+import { scheduleExpiry } from '../../../services/SanctionExpiryService';
 
 @ApplyOptions<Command.Options>({
     name: 'tempban',
@@ -74,6 +75,8 @@ export class TempBanCommand extends Command {
                 ...(caseNumber !== null ? { caseNumber } : {})
             },
         });
+
+        await scheduleExpiry('unban', guildId, target.id, duration.expiresAt);
 
         await target.ban({ reason: reason ?? `Tempban: ${duration.formatted}` });
 
