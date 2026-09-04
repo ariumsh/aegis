@@ -28,6 +28,7 @@ server without touching the others.
 - [Security](#security)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [Changelog](CHANGELOG.md)
 - [Licence](#licence)
 
 ---
