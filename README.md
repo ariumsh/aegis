@@ -381,6 +381,11 @@ docker compose -f docker-compose.prod.yml up -d --build bot
 The image is baked from the `Dockerfile`, so **`docker restart aegis-bot` does
 not pick up new code** — it restarts the old image. Rebuild.
 
+The runtime stage drops build-time dependencies and runs as the unprivileged
+`node` user. The Prisma CLI is not in the image as a result, so run
+`prisma migrate deploy` from the host or from the builder stage rather than
+inside the running container.
+
 Apply migrations before or immediately after deploying:
 
 ```bash
